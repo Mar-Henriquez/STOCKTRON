@@ -102,68 +102,146 @@ def _rechazo_sin_historial(mensaje):
 # ---------------------------------------------------------------- validaciones
 def _validar_entrada(con, prod, tipo, datos, ahora):
     errores = []
+
     if "fecha_vencimiento" in datos:
         try:
-            vence = date.fromisoformat(str(datos["fecha_vencimiento"]))
+            vence = date.fromisoformat(
+                str(datos["fecha_vencimiento"])
+            )
+
             if vence < ahora.date():
-                errores.append("No se puede ingresar producto vencido.")   # RE-10
+                errores.append(
+                    "No se puede ingresar producto vencido."
+                )
+
         except ValueError:
-            errores.append("La fecha de vencimiento no es válida (use AAAA-MM-DD).")
-    if tipo in ("TE-01", "TE-05") and prod["perecedero"]:                  # RE-09
+            errores.append(
+                "La fecha de vencimiento no es válida "
+                "(use AAAA-MM-DD)."
+            )
+
+    if tipo in ("TE-01", "TE-05") and prod["perecedero"]:
         for campo in ("lote", "fecha_vencimiento"):
             if campo not in datos:
-                errores.append(f"Producto perecedero: falta {campo.replace('_', ' ')}.")
+                errores.append(
+                    f"Producto perecedero: falta "
+                    f"{campo.replace('_', ' ')}."
+                )
+
     if tipo == "TE-01":
+
         try:
             if float(datos.get("costo_unitario", 0)) <= 0:
-                errores.append("El costo unitario debe ser mayor que cero.")  # RE-08
+                errores.append(
+                    "El costo unitario debe ser mayor que cero."
+                )
+
         except (TypeError, ValueError):
-            errores.append("El costo unitario debe ser un número.")
-        if "proveedor" in datos and "factura" in datos:                    # RE-18
-            dup = con.execute(
-                """SELECT folio FROM movimientos
-                   WHERE estado = 'Aprobado' AND tipo_codigo = 'TE-01'
-                     AND lower(json_extract(detalles, '$.proveedor')) = lower(?)
-                     AND lower(json_extract(detalles, '$.factura'))   = lower(?)""",
-                (str(datos["proveedor"]), str(datos["factura"]))).fetchone()
-            if dup:
-                errores.append(f"Factura duplicada: {datos['factura']} ya fue registrada "
-                               f"para este proveedor ({dup['folio']}).")
+            errores.append(
+                "El costo unitario debe ser un número."
+            )
+
+        if "factura" in datos:
+            proveedor_id = _buscar_proveedor_id(
+                con,
+                datos
+            )
+
+            if proveedor_id is not None:
+                dup = con.execute(
+                    """
+                    SELECT m.folio
+                    FROM movimientos m
+                    JOIN detalle_movimiento dm
+                        ON dm.folio = m.folio
+                    WHERE m.estado = 'Aprobado'
+                      AND m.tipo_codigo = 'TE-01'
+                      AND dm.proveedor_id = ?
+                      AND lower(dm.factura) = lower(?)
+                    LIMIT 1
+                    """,
+                    (
+                        proveedor_id,
+                        str(datos["factura"])
+                    )
+                ).fetchone()
+
+                if dup:
+                    errores.append(
+                        f"Factura duplicada: "
+                        f"{datos['factura']} ya fue registrada "
+                        f"para este proveedor ({dup['folio']})."
+                    )
+
     return errores
 
-
-def _validar(con, direccion, prod, cant, tipo, usuario, datos, ahora):
-    errores = []
-    if cant is None:
-        errores.append("La cantidad debe ser un número entero.")           # RS-07 / RE-07
-    elif cant <= 0:
-        errores.append("La cantidad debe ser mayor que cero.")
-   fila_tipo = con.execute(
-    "SELECT restringido FROM tipos_movimiento WHERE codigo = ?",
-    (tipo,)
-).fetchone()
-
-if (
-    fila_tipo is not None
-    and fila_tipo["restringido"] == 1
-    and usuario["rol"] != "Administrador"
+def _validar(
+    con,
+    direccion,
+    prod,
+    cant,
+    tipo,
+    usuario,
+    datos,
+    ahora
 ):
-    errores.append(
-        "Este tipo de movimiento requiere un usuario administrador."
-    )
-    for campo in CAMPOS_REQUERIDOS.get(tipo, []):                          # RS-05 / RE-05
+    errores = []
+
+    if cant is None:
+        errores.append(
+            "La cantidad debe ser un número entero."
+        )
+
+    elif cant <= 0:
+        errores.append(
+            "La cantidad debe ser mayor que cero."
+        )
+
+    fila_tipo = con.execute(
+        """
+        SELECT restringido
+        FROM tipos_movimiento
+        WHERE codigo = ?
+        """,
+        (tipo,)
+    ).fetchone()
+
+    if (
+        fila_tipo is not None
+        and fila_tipo["restringido"] == 1
+        and usuario["rol"] != "Administrador"
+    ):
+        errores.append(
+            "Este tipo de movimiento requiere "
+            "un usuario administrador."
+        )
+
+    for campo in CAMPOS_REQUERIDOS.get(tipo, []):
         if campo not in datos:
-            errores.append(f"Falta el dato obligatorio: {campo.replace('_', ' ')}.")
+            errores.append(
+                f"Falta el dato obligatorio: "
+                f"{campo.replace('_', ' ')}."
+            )
+
     if direccion == "SALIDA":
-        if cant and cant > prod["stock_actual"]:                           # RS-08
-            errores.append(f"Stock insuficiente: solo hay {prod['stock_actual']} "
-                           f"unidades disponibles.")
+
+        if cant and cant > prod["stock_actual"]:
+            errores.append(
+                f"Stock insuficiente: solo hay "
+                f"{prod['stock_actual']} unidades disponibles."
+            )
+
     else:
-        errores += _validar_entrada(con, prod, tipo, datos, ahora)
+        errores += _validar_entrada(
+            con,
+            prod,
+            tipo,
+            datos,
+            ahora
+        )
+
     return errores
-
-
-# ---------------------------------------------------------------- registro
+    
 def _buscar_proveedor_id(con, datos):
     """
     Obtiene el proveedor relacionado con el movimiento.
@@ -453,53 +531,91 @@ def obtener_producto(con, producto_id):
     return d
 
 
-def consultar_movimientos(con, producto_id=None, tipo=None, desde=None, hasta=None,
-                          direccion=None, estado=None):
-    """RS-16/17/18: filtra por producto, tipo y rango de fechas (AAAA-MM-DD)."""
-    sql = ("SELECT m.*, t.nombre AS tipo_nombre, t.direccion FROM movimientos m "
-           "JOIN tipos_movimiento t ON t.codigo = m.tipo_codigo WHERE 1 = 1")
+def consultar_movimientos(
+    con,
+    producto_id=None,
+    tipo=None,
+    desde=None,
+    hasta=None,
+    direccion=None,
+    estado=None
+):
+    """
+    Consulta el historial de movimientos.
+    """
+
+    sql = """
+        SELECT
+            m.*,
+            t.nombre AS tipo_nombre,
+            t.direccion
+        FROM movimientos m
+        JOIN tipos_movimiento t
+            ON t.codigo = m.tipo_codigo
+        WHERE 1 = 1
+    """
+
     params = []
-    for condicion, valor in [("m.producto_id = ?", producto_id), ("m.tipo_codigo = ?", tipo),
-                             ("date(m.fecha_hora) >= ?", desde), ("date(m.fecha_hora) <= ?", hasta),
-                             ("t.direccion = ?", direccion), ("m.estado = ?", estado)]:
+
+    filtros = [
+        ("m.producto_id = ?", producto_id),
+        ("m.tipo_codigo = ?", tipo),
+        ("date(m.fecha_hora) >= ?", desde),
+        ("date(m.fecha_hora) <= ?", hasta),
+        ("t.direccion = ?", direccion),
+        ("m.estado = ?", estado),
+    ]
+
+    for condicion, valor in filtros:
         if valor:
             sql += " AND " + condicion
             params.append(valor)
+
     sql += " ORDER BY m.fecha_hora DESC, m.folio DESC"
+
     filas = []
-                              
-   for f in con.execute(sql, params):
-    d = dict(f)
 
-    detalle = con.execute(
-        """
-        SELECT
-            dm.*,
-            p.nombre AS proveedor_nombre
-        FROM detalle_movimiento dm
-        LEFT JOIN proveedores p
-            ON p.id = dm.proveedor_id
-        WHERE dm.folio = ?
-        """,
-        (d["folio"],)
-    ).fetchone()
+    for f in con.execute(sql, params):
+        d = dict(f)
 
-    d["detalles"] = dict(detalle) if detalle else {}
+        detalle = con.execute(
+            """
+            SELECT
+                dm.*,
+                p.nombre AS proveedor_nombre
+            FROM detalle_movimiento dm
+            LEFT JOIN proveedores p
+                ON p.id = dm.proveedor_id
+            WHERE dm.folio = ?
+            """,
+            (d["folio"],)
+        ).fetchone()
 
-    lote = con.execute(
-        """
-        SELECT
-            id,
-            numero_lote,
-            fecha_vencimiento,
-            cantidad_ingresada
-        FROM lotes
-        WHERE folio_entrada = ?
-        """,
-        (d["folio"],)
-    ).fetchone()
+        d["detalles"] = (
+            dict(detalle)
+            if detalle
+            else {}
+        )
 
-    d["lote"] = dict(lote) if lote else None
+        lote = con.execute(
+            """
+            SELECT
+                id,
+                numero_lote,
+                fecha_vencimiento,
+                cantidad_ingresada
+            FROM lotes
+            WHERE folio_entrada = ?
+            """,
+            (d["folio"],)
+        ).fetchone()
 
-    filas.append(d)
+        d["lote"] = (
+            dict(lote)
+            if lote
+            else None
+        )
+
+        filas.append(d)
+
     return filas
