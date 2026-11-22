@@ -1086,30 +1086,18 @@ document
                 return;
             }
 
+            if (entryStep < 4) {
+                entryStep += 1;
+            }
 
-           if (entryStep < 4) {
-               entryStep += 1;
-           }
-        
             if (entryStep === 3) {
                 renderizarCamposEntrada();
-        }
-            
-        actualizarPasoEntrada();
-
-document
-    .getElementById("entryPrevious")
-    .addEventListener(
-        "click",
-        () => {
-
-            if (entryStep > 1) {
-                entryStep -= 1;
             }
 
             actualizarPasoEntrada();
         }
     );
+
 
 
 document
