@@ -739,15 +739,334 @@
                 </div>
 
 
-                <div class="panel-card">
+                <div
+    id="exitWizard"
+    class="wizard-card"
+>
 
-                    <div class="empty-state large">
-                        Selecciona
-                        <strong>Registrar salida</strong>
-                        para iniciar el proceso.
-                    </div>
+    <div class="wizard-steps">
+
+        <div
+            class="wizard-step active"
+            data-exit-step="1"
+        >
+            <span>1</span>
+            <strong>Producto</strong>
+        </div>
+
+        <div
+            class="wizard-step"
+            data-exit-step="2"
+        >
+            <span>2</span>
+            <strong>Cantidad y tipo</strong>
+        </div>
+
+        <div
+            class="wizard-step"
+            data-exit-step="3"
+        >
+            <span>3</span>
+            <strong>Detalles</strong>
+        </div>
+
+        <div
+            class="wizard-step"
+            data-exit-step="4"
+        >
+            <span>4</span>
+            <strong>Confirmación</strong>
+        </div>
+
+    </div>
+
+
+    <form id="exitForm">
+
+        <!-- =========================
+             PASO 1
+        ========================== -->
+        <div
+            class="wizard-panel active"
+            data-exit-panel="1"
+        >
+
+            <div class="wizard-heading">
+                <h4>Seleccionar producto</h4>
+
+                <p>
+                    Selecciona el producto que saldrá
+                    del inventario.
+                </p>
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="exitProduct">
+                    Producto
+                </label>
+
+                <select
+                    id="exitProduct"
+                    required
+                >
+                    <option value="">
+                        Selecciona un producto
+                    </option>
+                </select>
+
+            </div>
+
+
+            <div
+                id="exitProductInfo"
+                class="product-summary hidden"
+            >
+
+                <div>
+                    <span>Existencia</span>
+                    <strong id="exitCurrentStock">
+                        0
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Nivel mínimo</span>
+                    <strong id="exitMinimumStock">
+                        0
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Estado</span>
+                    <strong id="exitProductStatus">
+                        —
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Marca</span>
+                    <strong id="exitProductBrand">
+                        —
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             PASO 2
+        ========================== -->
+        <div
+            class="wizard-panel"
+            data-exit-panel="2"
+        >
+
+            <div class="wizard-heading">
+                <h4>Cantidad y tipo de salida</h4>
+
+                <p>
+                    Indica cuántas unidades salen y
+                    la causa de la salida.
+                </p>
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="exitQuantity">
+                        Cantidad de unidades
+                    </label>
+
+                    <input
+                        type="number"
+                        id="exitQuantity"
+                        min="1"
+                        step="1"
+                        required
+                    >
 
                 </div>
+
+
+                <div class="form-group">
+
+                    <label for="exitType">
+                        Tipo de salida
+                    </label>
+
+                    <select
+                        id="exitType"
+                        required
+                    >
+                        <option value="">
+                            Selecciona el tipo
+                        </option>
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        Fecha y hora
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitDateTime"
+                        readonly
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Usuario responsable
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitOperator"
+                        value="ADM-001"
+                        readonly
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="exitStockPreview"
+                class="form-note"
+            >
+                Selecciona producto y cantidad para
+                calcular la existencia resultante.
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             PASO 3
+        ========================== -->
+        <div
+            class="wizard-panel"
+            data-exit-panel="3"
+        >
+
+            <div class="wizard-heading">
+
+                <h4>Datos particulares</h4>
+
+                <p>
+                    Los campos cambiarán según el tipo
+                    de salida seleccionado.
+                </p>
+
+            </div>
+
+
+            <div id="exitDynamicFields"></div>
+
+        </div>
+
+
+        <!-- =========================
+             PASO 4
+        ========================== -->
+        <div
+            class="wizard-panel"
+            data-exit-panel="4"
+        >
+
+            <div class="wizard-heading">
+
+                <h4>Confirmar salida</h4>
+
+                <p>
+                    Revisa la información antes de
+                    descontar las unidades del inventario.
+                </p>
+
+            </div>
+
+
+            <div
+                id="exitReview"
+                class="review-card"
+            ></div>
+
+
+            <div
+                id="exitFormErrors"
+                class="form-errors"
+            ></div>
+
+        </div>
+
+
+        <!-- =========================
+             BOTONES
+        ========================== -->
+        <div class="wizard-actions">
+
+            <button
+                type="button"
+                class="secondary-button"
+                id="exitPrevious"
+                disabled
+            >
+                Anterior
+            </button>
+
+
+            <div class="wizard-actions-right">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="exitCancel"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    class="primary-button"
+                    id="exitNext"
+                >
+                    Siguiente
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button hidden"
+                    id="exitSubmit"
+                >
+                    Registrar salida
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
 
             </section>
 
