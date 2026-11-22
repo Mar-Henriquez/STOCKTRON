@@ -103,7 +103,7 @@ def create_app(ruta_bd=None, reloj=datetime.now):
         r["estado"] = "Aprobado" if r["aprobado"] else "Rechazado"
         return jsonify(r), (201 if r["aprobado"] else _codigo_http(r["errores"]))
 
-      @app.get("/")
+    @app.get("/")
     def frontend():
         return send_from_directory(
             "..",
