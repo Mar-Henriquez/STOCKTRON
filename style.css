@@ -922,6 +922,397 @@ tbody tr:hover {
 }
 
 /* =========================================================
+   ASISTENTE DE ENTRADAS
+========================================================= */
+
+.wizard-card {
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow);
+
+    overflow: hidden;
+}
+
+.wizard-steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    gap: 0;
+
+    padding: 18px 22px;
+
+    background: #f9fafb;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.wizard-step {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: var(--text-soft);
+
+    font-size: 12px;
+}
+
+.wizard-step:not(:last-child)::after {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    right: 12px;
+
+    width: calc(100% - 86px);
+    height: 1px;
+
+    background: #d1d5db;
+
+    transform: translateY(-50%);
+}
+
+.wizard-step span {
+    width: 28px;
+    height: 28px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 50%;
+
+    background: #e5e7eb;
+    color: #6b7280;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    flex-shrink: 0;
+}
+
+.wizard-step strong {
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.wizard-step.active {
+    color: var(--text);
+}
+
+.wizard-step.active span {
+    background: var(--primary);
+    color: white;
+}
+
+.wizard-step.completed span {
+    background: var(--success);
+    color: white;
+}
+
+
+/* =========================================================
+   PANELES DEL ASISTENTE
+========================================================= */
+
+#entryForm {
+    padding: 24px;
+}
+
+.wizard-panel {
+    display: none;
+}
+
+.wizard-panel.active {
+    display: block;
+}
+
+.wizard-heading {
+    margin-bottom: 22px;
+}
+
+.wizard-heading h4 {
+    font-size: 18px;
+}
+
+.wizard-heading p {
+    margin-top: 5px;
+
+    color: var(--text-soft);
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   SELECTS E INPUTS
+========================================================= */
+
+.form-group select {
+    width: 100%;
+
+    padding: 11px 12px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+
+    background: white;
+    color: var(--text);
+
+    font: inherit;
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.form-group select:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-group input[readonly] {
+    background: #f9fafb;
+    color: #6b7280;
+}
+
+
+/* =========================================================
+   RESUMEN DE PRODUCTO
+========================================================= */
+
+.product-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+
+    margin-top: 20px;
+}
+
+.product-summary > div {
+    padding: 14px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: #f9fafb;
+}
+
+.product-summary span {
+    display: block;
+
+    color: var(--text-soft);
+
+    font-size: 11px;
+}
+
+.product-summary strong {
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   CAMPOS DINÁMICOS
+========================================================= */
+
+.dynamic-fields-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 18px;
+}
+
+.dynamic-field-full {
+    grid-column: 1 / -1;
+}
+
+.dynamic-section {
+    margin-top: 20px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid var(--border);
+}
+
+.dynamic-section-title {
+    margin-bottom: 14px;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.currency-preview {
+    margin-top: 8px;
+
+    padding: 12px 14px;
+
+    border-radius: 9px;
+
+    background: #eff6ff;
+    color: #1e40af;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   CONFIRMACIÓN
+========================================================= */
+
+.review-card {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+
+    padding: 18px;
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    background: #f9fafb;
+}
+
+.review-item {
+    padding: 10px 0;
+}
+
+.review-item span {
+    display: block;
+
+    color: var(--text-soft);
+
+    font-size: 11px;
+}
+
+.review-item strong {
+    display: block;
+
+    margin-top: 4px;
+
+    font-size: 13px;
+}
+
+.review-item.full {
+    grid-column: 1 / -1;
+}
+
+
+/* =========================================================
+   BOTONES DEL ASISTENTE
+========================================================= */
+
+.wizard-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-top: 28px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid var(--border);
+}
+
+.wizard-actions-right {
+    display: flex;
+
+    gap: 10px;
+}
+
+.wizard-actions button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.hidden {
+    display: none !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE DEL ASISTENTE
+========================================================= */
+
+@media (max-width: 860px) {
+
+    .wizard-steps {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 14px;
+    }
+
+    .wizard-step::after {
+        display: none;
+    }
+
+    .product-summary {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .dynamic-fields-grid,
+    .review-card {
+        grid-template-columns: 1fr;
+    }
+
+    .review-item.full {
+        grid-column: auto;
+    }
+}
+
+
+@media (max-width: 560px) {
+
+    #entryForm {
+        padding: 18px;
+    }
+
+    .wizard-steps,
+    .product-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .wizard-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .wizard-actions-right {
+        flex-direction: column-reverse;
+    }
+
+    .wizard-actions button,
+    .wizard-actions-right button {
+        width: 100%;
+    }
+}
+
+/* =========================================================
    TOAST
 ========================================================= */
 
