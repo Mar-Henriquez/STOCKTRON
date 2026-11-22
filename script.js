@@ -1086,18 +1086,26 @@ document
                 return;
             }
 
-            if (entryStep < 4) {
-                entryStep += 1;
-            }
+          if (entryStep === 3) {
 
-            if (entryStep === 3) {
-                renderizarCamposEntrada();
-            }
+    if (!validarDetallesEntrada()) {
+        return;
+    }
+}
 
-            actualizarPasoEntrada();
-        }
-    );
+if (entryStep < 4) {
+    entryStep += 1;
+}
 
+if (entryStep === 3) {
+    renderizarCamposEntrada();
+}
+
+if (entryStep === 4) {
+    prepararConfirmacionEntrada();
+}
+
+actualizarPasoEntrada();
 
 
 document
@@ -1838,6 +1846,543 @@ function conectarCalculoCompra() {
     calcular();
 }
 
+/* =========================================================
+   DATOS, CONFIRMACIÓN Y REGISTRO DE ENTRADAS
+========================================================= */
+
+function obtenerDatosParticularesEntrada() {
+
+    const tipo =
+        document.getElementById("entryType").value;
+
+    const datos = {};
+
+
+    const valor = id =>
+        document.getElementById(id)?.value?.trim() || "";
+
+
+    if (valor("entryObservation")) {
+        datos.observacion =
+            valor("entryObservation");
+    }
+
+
+    if (tipo === "TE-01") {
+
+        datos.factura =
+            valor("entryInvoice");
+
+        datos.proveedor =
+            valor("entrySupplier");
+
+        datos.costo_unitario =
+            Number(
+                document.getElementById(
+                    "entryUnitCost"
+                )?.value
+            );
+
+        if (valor("entryLot")) {
+            datos.lote =
+                valor("entryLot");
+        }
+
+        if (valor("entryExpiration")) {
+            datos.fecha_vencimiento =
+                valor("entryExpiration");
+        }
+    }
+
+
+    if (tipo === "TE-02") {
+
+        datos.referencia =
+            valor("entryReference");
+
+        datos.motivo =
+            valor("entryReason");
+
+        if (valor("entryReturnedStatus")) {
+            datos.estado_devuelto =
+                valor("entryReturnedStatus");
+        }
+    }
+
+
+    if (tipo === "TE-03") {
+
+        datos.origen =
+            valor("entryOrigin");
+
+        datos.referencia =
+            valor("entryReference");
+    }
+
+
+    if (tipo === "TE-04") {
+
+        datos.motivo =
+            valor("entryReason");
+    }
+
+
+    if (tipo === "TE-05") {
+
+        datos.referencia =
+            valor("entryReference");
+
+        if (valor("entryLot")) {
+            datos.lote =
+                valor("entryLot");
+        }
+
+        if (valor("entryExpiration")) {
+            datos.fecha_vencimiento =
+                valor("entryExpiration");
+        }
+    }
+
+
+    if (tipo === "TE-06") {
+
+        datos.donante =
+            valor("entryDonor");
+    }
+
+
+    if (tipo === "TE-07") {
+
+        datos.fecha_corte =
+            valor("entryCutoffDate");
+    }
+
+
+    if (tipo === "TE-08") {
+
+        datos.proveedor =
+            valor("entrySupplier");
+
+        datos.referencia =
+            valor("entryReference");
+    }
+
+
+    if (tipo === "TE-09") {
+
+        datos.referencia =
+            valor("entryReference");
+    }
+
+
+    if (tipo === "TE-10") {
+
+        datos.proveedor =
+            valor("entrySupplier");
+
+        datos.referencia =
+            valor("entryReference");
+    }
+
+
+    return datos;
+}
+
+
+function validarDetallesEntrada() {
+
+    const campos =
+        document.querySelectorAll(
+            "#entryDynamicFields [required]"
+        );
+
+    for (const campo of campos) {
+
+        if (!campo.checkValidity()) {
+
+            campo.reportValidity();
+
+            return false;
+        }
+    }
+
+
+    const tipo =
+        document.getElementById(
+            "entryType"
+        ).value;
+
+
+    if (tipo === "TE-01") {
+
+        const factura =
+            document.getElementById(
+                "entryInvoice"
+            ).value.trim();
+
+        if (factura.length !== 11) {
+
+            mostrarToast(
+                "El NCF debe tener exactamente 11 caracteres."
+            );
+
+            return false;
+        }
+
+
+        const cantidad =
+            Number(
+                document.getElementById(
+                    "entryQuantity"
+                ).value
+            );
+
+        const cantidadFacturada =
+            Number(
+                document.getElementById(
+                    "entryBilledQuantity"
+                ).value
+            );
+
+        if (cantidad !== cantidadFacturada) {
+
+            mostrarToast(
+                "La cantidad facturada debe coincidir con la cantidad de entrada."
+            );
+
+            return false;
+        }
+    }
+
+
+    return true;
+}
+
+
+function prepararConfirmacionEntrada() {
+
+    const productoId =
+        document.getElementById(
+            "entryProduct"
+        ).value;
+
+    const producto =
+        entryProducts.find(
+            p => p.id === productoId
+        );
+
+    const cantidad =
+        Number(
+            document.getElementById(
+                "entryQuantity"
+            ).value
+        );
+
+    const tipoSelect =
+        document.getElementById(
+            "entryType"
+        );
+
+    const tipoTexto =
+        tipoSelect.options[
+            tipoSelect.selectedIndex
+        ]?.textContent || "";
+
+    const datos =
+        obtenerDatosParticularesEntrada();
+
+    const nuevoStock =
+        producto.stock_actual + cantidad;
+
+
+    let detallesExtra = "";
+
+
+    if (datos.proveedor) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Proveedor</span>
+                <strong>
+                    ${escapeHtml(datos.proveedor)}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.factura) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>NCF / Factura</span>
+                <strong>
+                    ${escapeHtml(datos.factura)}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.costo_unitario) {
+
+        const total =
+            cantidad *
+            Number(datos.costo_unitario);
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Costo unitario</span>
+                <strong>
+                    ${new Intl.NumberFormat(
+                        "es-DO",
+                        {
+                            style: "currency",
+                            currency: "DOP"
+                        }
+                    ).format(datos.costo_unitario)}
+                </strong>
+            </div>
+
+            <div class="review-item">
+                <span>Total</span>
+                <strong>
+                    ${new Intl.NumberFormat(
+                        "es-DO",
+                        {
+                            style: "currency",
+                            currency: "DOP"
+                        }
+                    ).format(total)}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.lote) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Lote</span>
+                <strong>
+                    ${escapeHtml(datos.lote)}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.fecha_vencimiento) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Vencimiento</span>
+                <strong>
+                    ${escapeHtml(
+                        datos.fecha_vencimiento
+                    )}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    document.getElementById(
+        "entryReview"
+    ).innerHTML = `
+
+        <div class="review-item">
+            <span>Producto</span>
+            <strong>
+                ${escapeHtml(producto.nombre)}
+            </strong>
+        </div>
+
+        <div class="review-item">
+            <span>Código</span>
+            <strong>
+                ${escapeHtml(producto.id)}
+            </strong>
+        </div>
+
+        <div class="review-item">
+            <span>Marca</span>
+            <strong>
+                ${escapeHtml(producto.marca || "—")}
+            </strong>
+        </div>
+
+        <div class="review-item">
+            <span>Cantidad</span>
+            <strong>
+                ${cantidad}
+            </strong>
+        </div>
+
+        <div class="review-item full">
+            <span>Tipo de entrada</span>
+            <strong>
+                ${escapeHtml(tipoTexto)}
+            </strong>
+        </div>
+
+        <div class="review-item">
+            <span>Existencia anterior</span>
+            <strong>
+                ${producto.stock_actual}
+            </strong>
+        </div>
+
+        <div class="review-item">
+            <span>Existencia resultante</span>
+            <strong>
+                ${nuevoStock}
+            </strong>
+        </div>
+
+        ${detallesExtra}
+
+        <div class="review-item">
+            <span>Responsable</span>
+            <strong>ADM-001</strong>
+        </div>
+    `;
+}
+
+
+document
+    .getElementById("entryForm")
+    .addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            if (!validarDetallesEntrada()) {
+                return;
+            }
+
+
+            const cuerpo = {
+
+                product_id:
+                    document.getElementById(
+                        "entryProduct"
+                    ).value,
+
+                quantity:
+                    Number(
+                        document.getElementById(
+                            "entryQuantity"
+                        ).value
+                    ),
+
+                entry_type:
+                    document.getElementById(
+                        "entryType"
+                    ).value,
+
+                operator_id:
+                    "ADM-001",
+
+                entry_details:
+                    obtenerDatosParticularesEntrada()
+            };
+
+
+            const errores =
+                document.getElementById(
+                    "entryFormErrors"
+                );
+
+            errores.innerHTML = "";
+
+
+            try {
+
+                const respuesta =
+                    await fetch(
+                        "/api/entry-records",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(cuerpo)
+                        }
+                    );
+
+
+                const resultado =
+                    await respuesta.json();
+
+
+                if (!respuesta.ok) {
+
+                    errores.innerHTML =
+                        (resultado.errores || [
+                            "No se pudo registrar la entrada."
+                        ])
+                        .map(
+                            error =>
+                                `<div>
+                                    ${escapeHtml(error)}
+                                </div>`
+                        )
+                        .join("");
+
+                    return;
+                }
+
+
+                mostrarToast(
+                    `Entrada ${resultado.folio} registrada correctamente.`
+                );
+
+
+                await Promise.all([
+                    cargarProductos(),
+                    cargarMovimientos(),
+                    cargarDatosEntradas()
+                ]);
+
+
+                document
+                    .getElementById(
+                        "entryForm"
+                    )
+                    .reset();
+
+
+                document
+                    .getElementById(
+                        "entryProductInfo"
+                    )
+                    .classList
+                    .add("hidden");
+
+
+                entryStep = 1;
+
+                actualizarPasoEntrada();
+
+                mostrarSeccion("panel");
+
+            } catch (error) {
+
+                errores.innerHTML =
+                    `<div>
+                        ${escapeHtml(error.message)}
+                    </div>`;
+            }
+        }
+    );
 
 document
     .getElementById("entryType")
