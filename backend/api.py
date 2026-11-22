@@ -308,7 +308,7 @@ def create_app(ruta_bd=None, reloj=datetime.now):
 
 
     @app.get("/api/suppliers")
-  def proveedores():
+    def proveedores():
         filas = con().execute(
             """
             SELECT
