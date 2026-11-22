@@ -628,7 +628,172 @@
 
     </div>
 
+    <!-- =========================
+         MODAL NUEVO PRODUCTO
+    ========================== -->
+    <div
+        id="productModal"
+        class="modal-backdrop"
+        aria-hidden="true"
+    >
+        <div class="modal-card">
 
+            <div class="modal-header">
+                <div>
+                    <h3>Nuevo producto</h3>
+                    <p>
+                        Registra un producto en el catálogo
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="btnCerrarProducto"
+                    aria-label="Cerrar"
+                >
+                    ×
+                </button>
+            </div>
+
+            <form id="productForm">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="productId">
+                            Código del producto
+                        </label>
+
+                        <input
+                            type="text"
+                            id="productId"
+                            name="id"
+                            placeholder="Ej. PROD-200"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productName">
+                            Nombre
+                        </label>
+
+                        <input
+                            type="text"
+                            id="productName"
+                            name="nombre"
+                            placeholder="Ej. Leche entera 1 L"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productBrand">
+                            Marca
+                        </label>
+
+                        <input
+                            type="text"
+                            id="productBrand"
+                            name="marca"
+                            placeholder="Ej. Rica"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productStock">
+                            Stock actual
+                        </label>
+
+                        <input
+                            type="number"
+                            id="productStock"
+                            name="stock_actual"
+                            min="0"
+                            value="0"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productMin">
+                            Stock mínimo
+                        </label>
+
+                        <input
+                            type="number"
+                            id="productMin"
+                            name="stock_minimo"
+                            min="0"
+                            value="0"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productMax">
+                            Stock máximo
+                        </label>
+
+                        <input
+                            type="number"
+                            id="productMax"
+                            name="stock_maximo"
+                            min="0"
+                            placeholder="Opcional"
+                        >
+                    </div>
+
+                </div>
+
+                <label class="checkbox-row">
+
+                    <input
+                        type="checkbox"
+                        id="productPerishable"
+                        name="perecedero"
+                    >
+
+                    <span>
+                        Producto perecedero
+                    </span>
+
+                </label>
+
+                <div class="form-note">
+                    La marca identifica el producto y no sustituye al proveedor.
+                </div>
+
+                <div
+                    id="productFormErrors"
+                    class="form-errors"
+                ></div>
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="btnCancelarProducto"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Guardar producto
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+    
     <div
         id="toast"
         class="toast"
