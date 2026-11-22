@@ -911,6 +911,29 @@ function validarPasoEntrada() {
         }
     }
 
+    if (entryStep === 3) {
+
+    const tipo =
+        document.getElementById(
+            "entryType"
+        ).value;
+
+    if (tipo === "TE-01") {
+
+        const factura =
+            document.getElementById(
+                "entryInvoice"
+            )?.value.trim();
+
+        if (!factura || factura.length !== 11) {
+            errores.push(
+                "El NCF de la factura debe tener exactamente 11 caracteres."
+            );
+        }
+
+    }
+}
+
 
     if (errores.length > 0) {
 
@@ -1289,13 +1312,14 @@ function renderizarCamposEntrada() {
                         Número de factura
                     </label>
 
-                    <input
-                        type="text"
-                        id="entryInvoice"
-                        maxlength="10"
-                        placeholder="Ej. FAC-1020"
-                        required
-                    >
+                <input
+                   type="text"
+                   id="entryInvoice"
+                   minlength="11"
+                   maxlength="11"
+                   placeholder="Ej. B0100000001"
+                   required
+                >
                 </div>
 
 
