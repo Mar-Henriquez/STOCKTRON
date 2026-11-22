@@ -1087,15 +1087,15 @@ document
             }
 
 
-            if (entryStep < 4) {
-                entryStep += 1;
-            }
-
-
-            actualizarPasoEntrada();
+           if (entryStep < 4) {
+               entryStep += 1;
+           }
+        
+            if (entryStep === 3) {
+                renderizarCamposEntrada();
         }
-    );
-
+            
+        actualizarPasoEntrada();
 
 document
     .getElementById("entryPrevious")
@@ -1864,23 +1864,19 @@ document
 
 async function iniciarAplicacion() {
 
-    mostrarSeccion("panel");
-
-    await Promise.all([
-        cargarProductos(),
-        cargarMovimientos(),
-        cargarDatosEntradas()
-    ]);
+   await Promise.all([
+    cargarProductos(),
+    cargarMovimientos(),
+    cargarDatosEntradas(),
+    cargarProveedoresEntradas()
+]);
 
     document.getElementById(
         "entryDateTime"
     ).value =
         new Date()
             .toLocaleString("es-DO");
-    
-if (entryStep === 3) {
-    renderizarCamposEntrada();
-}
+
     
     actualizarPasoEntrada();
 }
