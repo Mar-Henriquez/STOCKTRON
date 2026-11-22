@@ -5,12 +5,8 @@ Aquí viven las REGLAS del sistema (no en la pantalla ni en la base):
 cada función valida, actualiza el stock y deja el historial, todo en una
 sola transacción: o se guarda todo, o no se guarda nada.
 """
-import json
-from datetime import date, datetime
 
-# Tipos que solo puede registrar un Administrador (validación "Permisos").
-# Es una decisión de diseño: cámbiala si tu equipo define otra.
-TIPOS_RESTRINGIDOS = {"TS-07", "TS-08", "TS-11", "TS-15", "TE-04", "TE-07"}
+from datetime import date, datetime
 
 # Datos obligatorios según el tipo (columna "Datos" de tus tablas).
 CAMPOS_REQUERIDOS = {
@@ -142,8 +138,19 @@ def _validar(con, direccion, prod, cant, tipo, usuario, datos, ahora):
         errores.append("La cantidad debe ser un número entero.")           # RS-07 / RE-07
     elif cant <= 0:
         errores.append("La cantidad debe ser mayor que cero.")
-    if tipo in TIPOS_RESTRINGIDOS and usuario["rol"] != "Administrador":
-        errores.append("Este tipo de movimiento requiere un usuario administrador.")
+   fila_tipo = con.execute(
+    "SELECT restringido FROM tipos_movimiento WHERE codigo = ?",
+    (tipo,)
+).fetchone()
+
+if (
+    fila_tipo is not None
+    and fila_tipo["restringido"] == 1
+    and usuario["rol"] != "Administrador"
+):
+    errores.append(
+        "Este tipo de movimiento requiere un usuario administrador."
+    )
     for campo in CAMPOS_REQUERIDOS.get(tipo, []):                          # RS-05 / RE-05
         if campo not in datos:
             errores.append(f"Falta el dato obligatorio: {campo.replace('_', ' ')}.")
@@ -157,16 +164,214 @@ def _validar(con, direccion, prod, cant, tipo, usuario, datos, ahora):
 
 
 # ---------------------------------------------------------------- registro
-def _guardar(con, folio, prod_id, tipo, cant, ahora, usuario_id, datos, estado,
-             motivo_rechazo, stock_ant, stock_res):
+def _buscar_proveedor_id(con, datos):
+    """
+    Obtiene el proveedor relacionado con el movimiento.
+
+    Temporalmente acepta:
+    - proveedor_id
+    - nombre del proveedor en 'proveedor'
+
+    Más adelante el frontend enviará directamente proveedor_id.
+    """
+
+    if "proveedor_id" in datos:
+        fila = con.execute(
+            "SELECT id FROM proveedores WHERE id = ? AND estado = 'Activo'",
+            (datos["proveedor_id"],)
+        ).fetchone()
+
+        return fila["id"] if fila else None
+
+    if "proveedor" in datos:
+        fila = con.execute(
+            """
+            SELECT id
+            FROM proveedores
+            WHERE lower(nombre) = lower(?)
+              AND estado = 'Activo'
+            """,
+            (str(datos["proveedor"]),)
+        ).fetchone()
+
+        return fila["id"] if fila else None
+
+    return None
+
+
+def _guardar_detalle(con, folio, cantidad, datos):
+    """
+    Guarda los datos particulares del movimiento
+    en detalle_movimiento.
+    """
+
+    proveedor_id = _buscar_proveedor_id(con, datos)
+
+    costo_unitario = datos.get("costo_unitario")
+
+    total_compra = None
+
+    if costo_unitario is not None:
+        try:
+            total_compra = round(
+                cantidad * float(costo_unitario),
+                2
+            )
+        except (TypeError, ValueError):
+            total_compra = None
+
     con.execute(
-        """INSERT INTO movimientos (folio, producto_id, tipo_codigo, cantidad, fecha_hora,
-               usuario_id, referencia, estado, motivo_rechazo, stock_anterior,
-               stock_resultante, detalles)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (folio, prod_id, tipo, cant, ahora.isoformat(timespec="seconds"), usuario_id,
-         datos.get("referencia") or datos.get("factura"), estado, motivo_rechazo,
-         stock_ant, stock_res, json.dumps(datos, ensure_ascii=False)))
+        """
+        INSERT INTO detalle_movimiento
+        (
+            folio,
+            proveedor_id,
+            factura,
+            costo_unitario,
+            total_compra,
+            destino,
+            destinatario,
+            origen,
+            donante,
+            motivo,
+            causa,
+            autorizacion,
+            estado_devuelto,
+            fecha_corte,
+            fecha_vencimiento,
+            observacion
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            folio,
+            proveedor_id,
+            datos.get("factura"),
+            costo_unitario,
+            total_compra,
+            datos.get("destino"),
+            datos.get("destinatario"),
+            datos.get("origen"),
+            datos.get("donante"),
+            datos.get("motivo"),
+            datos.get("causa"),
+            datos.get("autorizacion"),
+            datos.get("estado_devuelto"),
+            datos.get("fecha_corte"),
+            datos.get("fecha_vencimiento"),
+            datos.get("observacion"),
+        )
+    )
+
+
+def _guardar_lote(con, folio, producto_id, cantidad, datos):
+    """
+    Guarda el lote cuando el movimiento incluye
+    número de lote y fecha de vencimiento.
+    """
+
+    numero_lote = datos.get("lote")
+    fecha_vencimiento = datos.get("fecha_vencimiento")
+
+    if not numero_lote or not fecha_vencimiento:
+        return
+
+    con.execute(
+        """
+        INSERT INTO lotes
+        (
+            producto_id,
+            folio_entrada,
+            numero_lote,
+            fecha_vencimiento,
+            cantidad_ingresada
+        )
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            producto_id,
+            folio,
+            numero_lote,
+            fecha_vencimiento,
+            cantidad,
+        )
+    )
+
+
+def _guardar(
+    con,
+    folio,
+    prod_id,
+    tipo,
+    cant,
+    ahora,
+    usuario_id,
+    datos,
+    estado,
+    motivo_rechazo,
+    stock_ant,
+    stock_res
+):
+    """
+    Guarda el movimiento principal y sus datos particulares.
+    """
+
+    referencia = (
+        datos.get("referencia")
+        or datos.get("factura")
+    )
+
+    con.execute(
+        """
+        INSERT INTO movimientos
+        (
+            folio,
+            producto_id,
+            tipo_codigo,
+            cantidad,
+            fecha_hora,
+            usuario_id,
+            referencia,
+            estado,
+            motivo_rechazo,
+            stock_anterior,
+            stock_resultante
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            folio,
+            prod_id,
+            tipo,
+            cant,
+            ahora.isoformat(timespec="seconds"),
+            usuario_id,
+            referencia,
+            estado,
+            motivo_rechazo,
+            stock_ant,
+            stock_res,
+        )
+    )
+
+    _guardar_detalle(
+        con,
+        folio,
+        cant,
+        datos
+    )
+
+    if (
+        estado == "Aprobado"
+        and tipo.startswith("TE-")
+    ):
+        _guardar_lote(
+            con,
+            folio,
+            prod_id,
+            cant,
+            datos
+        )
 
 
 def _registrar(con, direccion, producto_id, cantidad, tipo, usuario_id, datos, ahora):
@@ -262,8 +467,39 @@ def consultar_movimientos(con, producto_id=None, tipo=None, desde=None, hasta=No
             params.append(valor)
     sql += " ORDER BY m.fecha_hora DESC, m.folio DESC"
     filas = []
-    for f in con.execute(sql, params):
-        d = dict(f)
-        d["detalles"] = json.loads(d["detalles"])
-        filas.append(d)
+                              
+   for f in con.execute(sql, params):
+    d = dict(f)
+
+    detalle = con.execute(
+        """
+        SELECT
+            dm.*,
+            p.nombre AS proveedor_nombre
+        FROM detalle_movimiento dm
+        LEFT JOIN proveedores p
+            ON p.id = dm.proveedor_id
+        WHERE dm.folio = ?
+        """,
+        (d["folio"],)
+    ).fetchone()
+
+    d["detalles"] = dict(detalle) if detalle else {}
+
+    lote = con.execute(
+        """
+        SELECT
+            id,
+            numero_lote,
+            fecha_vencimiento,
+            cantidad_ingresada
+        FROM lotes
+        WHERE folio_entrada = ?
+        """,
+        (d["folio"],)
+    ).fetchone()
+
+    d["lote"] = dict(lote) if lote else None
+
+    filas.append(d)
     return filas
