@@ -285,7 +285,7 @@ def _guardar_detalle(con, folio, cantidad, datos):
 
     proveedor_id = _buscar_proveedor_id(con, datos)
 
-        costo_unitario = datos.get("costo_unitario")
+    costo_unitario = datos.get("costo_unitario")
 
     try:
         costo_unitario = (
