@@ -1162,6 +1162,679 @@ document
     );
 
 /* =========================================================
+   CAMPOS DINÁMICOS DE ENTRADAS TE-01 A TE-10
+========================================================= */
+
+let entrySuppliers = [];
+
+
+async function cargarProveedoresEntradas() {
+
+    try {
+
+        const respuesta =
+            await fetch("/api/suppliers");
+
+        if (!respuesta.ok) {
+            throw new Error(
+                "No se pudieron cargar los proveedores."
+            );
+        }
+
+        entrySuppliers =
+            await respuesta.json();
+
+    } catch (error) {
+
+        entrySuppliers = [];
+
+        mostrarToast(error.message);
+    }
+}
+
+
+function opcionesProveedores() {
+
+    if (entrySuppliers.length === 0) {
+        return `
+            <option value="">
+                No hay proveedores activos
+            </option>
+        `;
+    }
+
+    return `
+        <option value="">
+            Selecciona un proveedor
+        </option>
+        ${entrySuppliers
+            .map(
+                proveedor => `
+                    <option value="${escapeHtml(proveedor.nombre)}">
+                        ${escapeHtml(proveedor.nombre)}
+                    </option>
+                `
+            )
+            .join("")}
+    `;
+}
+
+
+function campoObservacion() {
+
+    return `
+        <div class="form-group dynamic-field-full">
+            <label for="entryObservation">
+                Observación
+            </label>
+
+            <input
+                type="text"
+                id="entryObservation"
+                maxlength="250"
+                placeholder="Información adicional"
+            >
+        </div>
+    `;
+}
+
+
+function renderizarCamposEntrada() {
+
+    const tipo =
+        document.getElementById(
+            "entryType"
+        ).value;
+
+    const contenedor =
+        document.getElementById(
+            "entryDynamicFields"
+        );
+
+    const productoId =
+        document.getElementById(
+            "entryProduct"
+        ).value;
+
+    const producto =
+        entryProducts.find(
+            item => item.id === productoId
+        );
+
+    const perecedero =
+        producto?.perecedero === 1 ||
+        producto?.perecedero === true;
+
+
+    if (!tipo) {
+
+        contenedor.innerHTML = `
+            <div class="empty-state">
+                Selecciona un tipo de entrada
+                en el paso anterior.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (tipo === "TE-01") {
+
+        contenedor.innerHTML = `
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+                    <label for="entryInvoice">
+                        Número de factura
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryInvoice"
+                        maxlength="10"
+                        placeholder="Ej. FAC-1020"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="entrySupplier">
+                        Proveedor
+                    </label>
+
+                    <select
+                        id="entrySupplier"
+                        required
+                    >
+                        ${opcionesProveedores()}
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="entryBrand">
+                        Marca del producto
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryBrand"
+                        maxlength="30"
+                        value="${escapeHtml(producto?.marca || "")}"
+                        placeholder="Marca recibida"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="entryBilledQuantity">
+                        Cantidad facturada
+                    </label>
+
+                    <input
+                        type="number"
+                        id="entryBilledQuantity"
+                        min="1"
+                        step="1"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="entryUnitCost">
+                        Costo unitario
+                    </label>
+
+                    <input
+                        type="number"
+                        id="entryUnitCost"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="RD$ 0.00"
+                        required
+                    >
+                </div>
+
+
+                ${
+                    perecedero
+                        ? `
+                            <div class="form-group">
+                                <label for="entryLot">
+                                    Número de lote
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="entryLot"
+                                    maxlength="10"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="entryExpiration">
+                                    Fecha de vencimiento
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="entryExpiration"
+                                    required
+                                >
+                            </div>
+                        `
+                        : ""
+                }
+
+
+                <div class="dynamic-field-full">
+
+                    <div
+                        id="entryPurchaseTotal"
+                        class="currency-preview"
+                    >
+                        Total de la compra: RD$ 0.00
+                    </div>
+
+                </div>
+
+
+                ${campoObservacion()}
+
+            </div>
+        `;
+
+        const cantidad =
+            document.getElementById(
+                "entryQuantity"
+            ).value;
+
+        document.getElementById(
+            "entryBilledQuantity"
+        ).value = cantidad;
+
+        conectarCalculoCompra();
+
+        return;
+    }
+
+
+    if (tipo === "TE-02") {
+
+        contenedor.innerHTML = `
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+                    <label for="entryReference">
+                        Referencia de la venta original
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryReference"
+                        maxlength="11"
+                        placeholder="Ej. VT-2026-205"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="entryReason">
+                        Motivo de la devolución
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryReason"
+                        maxlength="100"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="entryReturnedStatus">
+                        Estado del producto devuelto
+                    </label>
+
+                    <select id="entryReturnedStatus">
+                        <option value="">
+                            Selecciona
+                        </option>
+                        <option value="Nuevo">
+                            Nuevo
+                        </option>
+                        <option value="Usado">
+                            Usado
+                        </option>
+                        <option value="Con defecto">
+                            Con defecto
+                        </option>
+                    </select>
+                </div>
+
+
+                ${campoObservacion()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (tipo === "TE-03") {
+
+        contenedor.innerHTML = `
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+                    <label for="entryOrigin">
+                        Sucursal de origen
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryOrigin"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="entryReference">
+                        Referencia de transferencia
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryReference"
+                        required
+                    >
+                </div>
+
+                ${campoObservacion()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (tipo === "TE-04") {
+
+        contenedor.innerHTML = `
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group dynamic-field-full">
+                    <label for="entryReason">
+                        Motivo del ajuste
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryReason"
+                        required
+                    >
+                </div>
+
+                ${campoObservacion()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (tipo === "TE-05") {
+
+        contenedor.innerHTML = `
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+                    <label for="entryReference">
+                        Referencia de producción
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryReference"
+                        required
+                    >
+                </div>
+
+                ${
+                    perecedero
+                        ? `
+                            <div class="form-group">
+                                <label for="entryLot">
+                                    Número de lote
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="entryLot"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="entryExpiration">
+                                    Fecha de vencimiento
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="entryExpiration"
+                                    required
+                                >
+                            </div>
+                        `
+                        : ""
+                }
+
+                ${campoObservacion()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (tipo === "TE-06") {
+
+        contenedor.innerHTML = `
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+                    <label for="entryDonor">
+                        Donante
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryDonor"
+                        required
+                    >
+                </div>
+
+                ${campoObservacion()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (tipo === "TE-07") {
+
+        contenedor.innerHTML = `
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+                    <label for="entryCutoffDate">
+                        Fecha de corte
+                    </label>
+
+                    <input
+                        type="date"
+                        id="entryCutoffDate"
+                        required
+                    >
+                </div>
+
+                ${campoObservacion()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (tipo === "TE-08") {
+
+        contenedor.innerHTML = `
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+                    <label for="entrySupplier">
+                        Proveedor
+                    </label>
+
+                    <select
+                        id="entrySupplier"
+                        required
+                    >
+                        ${opcionesProveedores()}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="entryReference">
+                        Referencia de la compra
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryReference"
+                        required
+                    >
+                </div>
+
+                ${campoObservacion()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (tipo === "TE-09") {
+
+        contenedor.innerHTML = `
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+                    <label for="entryReference">
+                        Referencia de la pérdida original
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryReference"
+                        required
+                    >
+                </div>
+
+                ${campoObservacion()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (tipo === "TE-10") {
+
+        contenedor.innerHTML = `
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+                    <label for="entrySupplier">
+                        Proveedor
+                    </label>
+
+                    <select
+                        id="entrySupplier"
+                        required
+                    >
+                        ${opcionesProveedores()}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="entryReference">
+                        Referencia de la devolución
+                    </label>
+
+                    <input
+                        type="text"
+                        id="entryReference"
+                        required
+                    >
+                </div>
+
+                ${campoObservacion()}
+
+            </div>
+        `;
+    }
+}
+
+
+function conectarCalculoCompra() {
+
+    const costo =
+        document.getElementById(
+            "entryUnitCost"
+        );
+
+    const cantidadFacturada =
+        document.getElementById(
+            "entryBilledQuantity"
+        );
+
+    const total =
+        document.getElementById(
+            "entryPurchaseTotal"
+        );
+
+
+    function calcular() {
+
+        const cantidad =
+            Number(
+                cantidadFacturada?.value
+            );
+
+        const unitario =
+            Number(
+                costo?.value
+            );
+
+        const resultado =
+            Number.isFinite(cantidad) &&
+            Number.isFinite(unitario)
+                ? cantidad * unitario
+                : 0;
+
+
+        total.textContent =
+            "Total de la compra: " +
+            new Intl.NumberFormat(
+                "es-DO",
+                {
+                    style: "currency",
+                    currency: "DOP"
+                }
+            ).format(resultado);
+    }
+
+
+    costo?.addEventListener(
+        "input",
+        calcular
+    );
+
+    cantidadFacturada?.addEventListener(
+        "input",
+        calcular
+    );
+
+    calcular();
+}
+
+
+document
+    .getElementById("entryType")
+    .addEventListener(
+        "change",
+        renderizarCamposEntrada
+    );
+
+/* =========================================================
    INICIO
 ========================================================= */
 
@@ -1180,7 +1853,11 @@ async function iniciarAplicacion() {
     ).value =
         new Date()
             .toLocaleString("es-DO");
-
+    
+if (entryStep === 3) {
+    renderizarCamposEntrada();
+}
+    
     actualizarPasoEntrada();
 }
 
