@@ -466,17 +466,215 @@ async function cargarMovimientos() {
    BOTONES TODAVÍA NO IMPLEMENTADOS
 ========================================================= */
 
+const productModal =
+    document.getElementById("productModal");
+
+const productForm =
+    document.getElementById("productForm");
+
+const productFormErrors =
+    document.getElementById("productFormErrors");
+
+
+function abrirModalProducto() {
+
+    productForm.reset();
+
+    document.getElementById(
+        "productStock"
+    ).value = 0;
+
+    document.getElementById(
+        "productMin"
+    ).value = 0;
+
+    productFormErrors.innerHTML = "";
+
+    productModal.classList.add("show");
+
+    productModal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    document.getElementById(
+        "productId"
+    ).focus();
+}
+
+
+function cerrarModalProducto() {
+
+    productModal.classList.remove("show");
+
+    productModal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    productFormErrors.innerHTML = "";
+}
+
+
 document
     .getElementById("btnNuevoProducto")
-    .addEventListener("click", () => {
-
-        mostrarToast(
-            "El formulario de productos será el siguiente módulo."
-        );
-
-    });
+    .addEventListener(
+        "click",
+        abrirModalProducto
+    );
 
 
+document
+    .getElementById("btnCerrarProducto")
+    .addEventListener(
+        "click",
+        cerrarModalProducto
+    );
+
+
+document
+    .getElementById("btnCancelarProducto")
+    .addEventListener(
+        "click",
+        cerrarModalProducto
+    );
+
+
+productModal.addEventListener(
+    "click",
+    event => {
+
+        if (event.target === productModal) {
+            cerrarModalProducto();
+        }
+
+    }
+);
+
+
+productForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        productFormErrors.innerHTML = "";
+
+        const stockMaximoRaw =
+            document
+                .getElementById("productMax")
+                .value
+                .trim();
+
+        const datos = {
+
+            id:
+                document
+                    .getElementById("productId")
+                    .value
+                    .trim(),
+
+            nombre:
+                document
+                    .getElementById("productName")
+                    .value
+                    .trim(),
+
+            marca:
+                document
+                    .getElementById("productBrand")
+                    .value
+                    .trim(),
+
+            stock_actual:
+                Number(
+                    document
+                        .getElementById("productStock")
+                        .value
+                ),
+
+            stock_minimo:
+                Number(
+                    document
+                        .getElementById("productMin")
+                        .value
+                ),
+
+            stock_maximo:
+                stockMaximoRaw === ""
+                    ? null
+                    : Number(stockMaximoRaw),
+
+            perecedero:
+                document
+                    .getElementById(
+                        "productPerishable"
+                    )
+                    .checked
+        };
+
+
+        try {
+
+            const respuesta = await fetch(
+                "/api/products",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify(datos)
+                }
+            );
+
+
+            const resultado =
+                await respuesta.json();
+
+
+            if (!respuesta.ok) {
+
+                const errores =
+                    resultado.errores ||
+                    [
+                        "No se pudo registrar el producto."
+                    ];
+
+                productFormErrors.innerHTML =
+                    errores
+                        .map(
+                            error =>
+                                `<div>${escapeHtml(error)}</div>`
+                        )
+                        .join("");
+
+                return;
+            }
+
+
+            cerrarModalProducto();
+
+            mostrarToast(
+                "Producto registrado correctamente."
+            );
+
+
+            await cargarProductos();
+
+        } catch (error) {
+
+            productFormErrors.innerHTML =
+                `<div>
+                    ${escapeHtml(error.message)}
+                </div>`;
+
+        }
+
+    }
+);
 document
     .getElementById("btnNuevaEntrada")
     .addEventListener("click", () => {
