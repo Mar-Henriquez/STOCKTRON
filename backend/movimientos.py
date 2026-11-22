@@ -487,7 +487,7 @@ def _registrar(con, direccion, producto_id, cantidad, tipo, usuario_id, datos, a
         errores = _validar(con, direccion, prod, cant, tipo, usuario, datos, ahora)
         folio = _siguiente_folio(con, direccion, ahora)
 
-               if errores:
+        if errores:
             cantidad_historial = (
                 cant
                 if cant is not None and cant > 0
@@ -508,10 +508,17 @@ def _registrar(con, direccion, producto_id, cantidad, tipo, usuario_id, datos, a
                 stock_ant,
                 stock_ant
             )
-                   
+
             con.execute("COMMIT")
-            return {"aprobado": False, "folio": folio, "errores": errores, "advertencias": [],
-                    "stock_anterior": stock_ant, "stock_nuevo": stock_ant}
+
+            return {
+                "aprobado": False,
+                "folio": folio,
+                "errores": errores,
+                "advertencias": [],
+                "stock_anterior": stock_ant,
+                "stock_nuevo": stock_ant
+            }
 
         if direccion == "SALIDA":                      # la condición protege contra stock negativo
             cur = con.execute("UPDATE productos SET stock_actual = stock_actual - ? "
