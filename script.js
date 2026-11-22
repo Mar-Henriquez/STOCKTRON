@@ -2655,6 +2655,600 @@ function validarPasoSalida() {
     return true;
 }
 
+function campoObservacionSalida(
+    etiqueta = "Observación",
+    requerido = false
+) {
+
+    return `
+        <div class="form-group dynamic-field-full">
+
+            <label for="exitObservation">
+                ${etiqueta}
+            </label>
+
+            <textarea
+                id="exitObservation"
+                rows="3"
+                ${requerido ? "required" : ""}
+            ></textarea>
+
+        </div>
+    `;
+}
+
+
+function renderizarCamposSalida() {
+
+    const contenedor =
+        document.getElementById(
+            "exitDynamicFields"
+        );
+
+    const tipo =
+        document.getElementById(
+            "exitType"
+        ).value;
+
+
+    contenedor.innerHTML = "";
+
+
+    /* =========================
+       TS-01 · VENTA
+    ========================== */
+
+    if (tipo === "TS-01") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitReference">
+                        Referencia de venta
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitReference"
+                        placeholder="Ej. VT-2026-205"
+                        required
+                    >
+
+                </div>
+
+                ${campoObservacionSalida()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-02 · PRODUCTO DAÑADO
+    ========================== */
+
+    if (tipo === "TS-02") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                ${campoObservacionSalida(
+                    "Descripción del daño",
+                    true
+                )}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-03 · PRODUCTO VENCIDO
+    ========================== */
+
+    if (tipo === "TS-03") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitExpiration">
+                        Fecha de vencimiento
+                    </label>
+
+                    <input
+                        type="date"
+                        id="exitExpiration"
+                        required
+                    >
+
+                </div>
+
+                ${campoObservacionSalida(
+                    "Observación",
+                    true
+                )}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-04 · DEVOLUCIÓN A PROVEEDOR
+    ========================== */
+
+    if (tipo === "TS-04") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitSupplier">
+                        Proveedor
+                    </label>
+
+                    <select
+                        id="exitSupplier"
+                        required
+                    >
+                        ${opcionesProveedores()}
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="exitReason">
+                        Motivo de devolución
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitReason"
+                        required
+                    >
+
+                </div>
+
+
+                ${campoObservacionSalida()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-05 · CONSUMO INTERNO
+    ========================== */
+
+    if (tipo === "TS-05") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitReason">
+                        Área o motivo de uso
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitReason"
+                        required
+                    >
+
+                </div>
+
+                ${campoObservacionSalida()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-06 · PÉRDIDA O EXTRAVÍO
+    ========================== */
+
+    if (tipo === "TS-06") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                ${campoObservacionSalida(
+                    "Explicación de la pérdida o extravío",
+                    true
+                )}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-07 · ROBO
+    ========================== */
+
+    if (tipo === "TS-07") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                ${campoObservacionSalida(
+                    "Descripción del incidente",
+                    true
+                )}
+
+                <div class="form-note dynamic-field-full">
+                    Este tipo de salida está restringido
+                    al administrador.
+                </div>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-08 · AJUSTE INVENTARIO
+    ========================== */
+
+    if (tipo === "TS-08") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group dynamic-field-full">
+
+                    <label for="exitReason">
+                        Motivo del ajuste
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitReason"
+                        required
+                    >
+
+                </div>
+
+                ${campoObservacionSalida()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-09 · TRANSFERENCIA
+    ========================== */
+
+    if (tipo === "TS-09") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitDestination">
+                        Sucursal de destino
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitDestination"
+                        required
+                    >
+
+                </div>
+
+                ${campoObservacionSalida()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-10 · MUESTRA O PROMOCIÓN
+    ========================== */
+
+    if (tipo === "TS-10") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitReason">
+                        Campaña o motivo
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitReason"
+                        required
+                    >
+
+                </div>
+
+                ${campoObservacionSalida()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-11 · DONACIÓN
+    ========================== */
+
+    if (tipo === "TS-11") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitRecipient">
+                        Destinatario
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitRecipient"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="exitReason">
+                        Motivo de la donación
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitReason"
+                        required
+                    >
+
+                </div>
+
+
+                ${campoObservacionSalida()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-12 · MERMA
+    ========================== */
+
+    if (tipo === "TS-12") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitCause">
+                        Causa de la merma
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitCause"
+                        required
+                    >
+
+                </div>
+
+                ${campoObservacionSalida()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-13 · USO PARA PRODUCCIÓN
+    ========================== */
+
+    if (tipo === "TS-13") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitReference">
+                        Referencia de producción
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitReference"
+                        required
+                    >
+
+                </div>
+
+                ${campoObservacionSalida()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-14 · DESPACHO DE PEDIDO
+    ========================== */
+
+    if (tipo === "TS-14") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitReference">
+                        Referencia del pedido
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitReference"
+                        placeholder="Ej. PED-2026-014"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="exitDestination">
+                        Destino
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitDestination"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="exitAuthorization">
+                        Autorización
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitAuthorization"
+                    >
+
+                </div>
+
+
+                ${campoObservacionSalida()}
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* =========================
+       TS-15 · BAJA DEFINITIVA
+    ========================== */
+
+    if (tipo === "TS-15") {
+
+        contenedor.innerHTML = `
+
+            <div class="dynamic-fields-grid">
+
+                <div class="form-group">
+
+                    <label for="exitReason">
+                        Motivo de la baja
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitReason"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="exitAuthorization">
+                        Autorizado por
+                    </label>
+
+                    <input
+                        type="text"
+                        id="exitAuthorization"
+                        required
+                    >
+
+                </div>
+
+
+                ${campoObservacionSalida()}
+
+
+                <div class="form-note dynamic-field-full">
+                    Este tipo de salida está restringido
+                    al administrador.
+                </div>
+
+            </div>
+        `;
+
+        return;
+    }
+}
 
 function actualizarVistaStockSalida() {
 
@@ -2777,6 +3371,13 @@ document
         actualizarVistaStockSalida
     );
 
+document
+    .getElementById("exitType")
+    .addEventListener(
+        "change",
+        renderizarCamposSalida
+    );
+
 
 document
     .getElementById("exitNext")
@@ -2789,12 +3390,21 @@ document
             }
 
 
-            if (exitStep < 4) {
-                exitStep += 1;
+           if (exitStep < 4) {
+               exitStep += 1;
+            
+           }
+
+            if (exitStep === 3) {
+    
+                renderizarCamposSalida();
+
             }
 
 
+
             actualizarPasoSalida();
+        
         }
     );
 
