@@ -285,7 +285,17 @@ def _guardar_detalle(con, folio, cantidad, datos):
 
     proveedor_id = _buscar_proveedor_id(con, datos)
 
-    costo_unitario = datos.get("costo_unitario")
+        costo_unitario = datos.get("costo_unitario")
+
+    try:
+        costo_unitario = (
+            float(costo_unitario)
+            if costo_unitario is not None
+            and float(costo_unitario) > 0
+            else None
+        )
+    except (TypeError, ValueError):
+        costo_unitario = None
 
     total_compra = None
 
