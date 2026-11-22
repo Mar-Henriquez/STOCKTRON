@@ -2394,16 +2394,518 @@ document
     );
 
 /* =========================================================
+   ASISTENTE DE SALIDAS
+========================================================= */
+
+let exitStep = 1;
+let exitProducts = [];
+
+
+async function cargarDatosSalidas() {
+
+    try {
+
+        const [
+            respuestaProductos,
+            respuestaTipos
+        ] = await Promise.all([
+            fetch("/api/products"),
+            fetch("/api/types?direccion=SALIDA")
+        ]);
+
+
+        if (
+            !respuestaProductos.ok ||
+            !respuestaTipos.ok
+        ) {
+            throw new Error(
+                "No se pudieron cargar los datos de salidas."
+            );
+        }
+
+
+        exitProducts =
+            await respuestaProductos.json();
+
+        const tipos =
+            await respuestaTipos.json();
+
+
+        const productSelect =
+            document.getElementById(
+                "exitProduct"
+            );
+
+        const typeSelect =
+            document.getElementById(
+                "exitType"
+            );
+
+
+        productSelect.innerHTML =
+            `<option value="">
+                Selecciona un producto
+            </option>`;
+
+
+        exitProducts.forEach(producto => {
+
+            const opcion =
+                document.createElement(
+                    "option"
+                );
+
+            opcion.value =
+                producto.id;
+
+            opcion.textContent =
+                `${producto.id} · ${producto.nombre}` +
+                `${producto.marca
+                    ? " · " + producto.marca
+                    : ""
+                }`;
+
+            productSelect.appendChild(
+                opcion
+            );
+        });
+
+
+        typeSelect.innerHTML =
+            `<option value="">
+                Selecciona el tipo
+            </option>`;
+
+
+        tipos.forEach(tipo => {
+
+            const opcion =
+                document.createElement(
+                    "option"
+                );
+
+            opcion.value =
+                tipo.codigo;
+
+            opcion.textContent =
+                `${tipo.codigo} · ${tipo.nombre}`;
+
+            typeSelect.appendChild(
+                opcion
+            );
+        });
+
+    } catch (error) {
+
+        mostrarToast(
+            error.message
+        );
+    }
+}
+
+
+function actualizarPasoSalida() {
+
+    document
+        .querySelectorAll(
+            "[data-exit-panel]"
+        )
+        .forEach(panel => {
+
+            panel.classList.toggle(
+                "active",
+                Number(
+                    panel.dataset.exitPanel
+                ) === exitStep
+            );
+        });
+
+
+    document
+        .querySelectorAll(
+            "[data-exit-step]"
+        )
+        .forEach(indicador => {
+
+            const numero =
+                Number(
+                    indicador.dataset.exitStep
+                );
+
+            indicador.classList.toggle(
+                "active",
+                numero === exitStep
+            );
+
+            indicador.classList.toggle(
+                "completed",
+                numero < exitStep
+            );
+        });
+
+
+    document.getElementById(
+        "exitPrevious"
+    ).disabled =
+        exitStep === 1;
+
+
+    document.getElementById(
+        "exitNext"
+    ).classList.toggle(
+        "hidden",
+        exitStep === 4
+    );
+
+
+    document.getElementById(
+        "exitSubmit"
+    ).classList.toggle(
+        "hidden",
+        exitStep !== 4
+    );
+}
+
+
+function validarPasoSalida() {
+
+    if (exitStep === 1) {
+
+        const producto =
+            document.getElementById(
+                "exitProduct"
+            ).value;
+
+        if (!producto) {
+
+            mostrarToast(
+                "Debes seleccionar un producto."
+            );
+
+            return false;
+        }
+    }
+
+
+    if (exitStep === 2) {
+
+        const cantidad =
+            Number(
+                document.getElementById(
+                    "exitQuantity"
+                ).value
+            );
+
+        const tipo =
+            document.getElementById(
+                "exitType"
+            ).value;
+
+
+        if (
+            !Number.isInteger(cantidad) ||
+            cantidad <= 0
+        ) {
+
+            mostrarToast(
+                "La cantidad debe ser un entero mayor que cero."
+            );
+
+            return false;
+        }
+
+
+        if (!tipo) {
+
+            mostrarToast(
+                "Debes seleccionar el tipo de salida."
+            );
+
+            return false;
+        }
+
+
+        const productoId =
+            document.getElementById(
+                "exitProduct"
+            ).value;
+
+        const producto =
+            exitProducts.find(
+                item =>
+                    item.id === productoId
+            );
+
+
+        if (
+            producto &&
+            cantidad >
+                producto.stock_actual
+        ) {
+
+            mostrarToast(
+                "La cantidad solicitada supera la existencia disponible."
+            );
+
+            return false;
+        }
+    }
+
+
+    return true;
+}
+
+
+function actualizarVistaStockSalida() {
+
+    const productoId =
+        document.getElementById(
+            "exitProduct"
+        ).value;
+
+    const cantidad =
+        Number(
+            document.getElementById(
+                "exitQuantity"
+            ).value
+        );
+
+    const producto =
+        exitProducts.find(
+            item =>
+                item.id === productoId
+        );
+
+    const vista =
+        document.getElementById(
+            "exitStockPreview"
+        );
+
+
+    if (
+        !producto ||
+        !Number.isInteger(cantidad) ||
+        cantidad <= 0
+    ) {
+
+        vista.textContent =
+            "Selecciona producto y cantidad para calcular la existencia resultante.";
+
+        return;
+    }
+
+
+    const nuevoStock =
+        producto.stock_actual -
+        cantidad;
+
+
+    vista.textContent =
+        `Existencia actual: ${producto.stock_actual} · ` +
+        `Salida: -${cantidad} · ` +
+        `Existencia resultante: ${nuevoStock}`;
+}
+
+
+document
+    .getElementById("exitProduct")
+    .addEventListener(
+        "change",
+        event => {
+
+            const producto =
+                exitProducts.find(
+                    item =>
+                        item.id ===
+                        event.target.value
+                );
+
+            const resumen =
+                document.getElementById(
+                    "exitProductInfo"
+                );
+
+
+            if (!producto) {
+
+                resumen.classList.add(
+                    "hidden"
+                );
+
+                return;
+            }
+
+
+            document.getElementById(
+                "exitCurrentStock"
+            ).textContent =
+                producto.stock_actual;
+
+
+            document.getElementById(
+                "exitMinimumStock"
+            ).textContent =
+                producto.stock_minimo;
+
+
+            document.getElementById(
+                "exitProductStatus"
+            ).textContent =
+                producto.estado;
+
+
+            document.getElementById(
+                "exitProductBrand"
+            ).textContent =
+                producto.marca || "—";
+
+
+            resumen.classList.remove(
+                "hidden"
+            );
+
+
+            actualizarVistaStockSalida();
+        }
+    );
+
+
+document
+    .getElementById("exitQuantity")
+    .addEventListener(
+        "input",
+        actualizarVistaStockSalida
+    );
+
+
+document
+    .getElementById("exitNext")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (!validarPasoSalida()) {
+                return;
+            }
+
+
+            if (exitStep < 4) {
+                exitStep += 1;
+            }
+
+
+            actualizarPasoSalida();
+        }
+    );
+
+
+document
+    .getElementById("exitPrevious")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (exitStep > 1) {
+                exitStep -= 1;
+            }
+
+
+            actualizarPasoSalida();
+        }
+    );
+
+
+document
+    .getElementById("exitCancel")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById(
+                    "exitForm"
+                )
+                .reset();
+
+
+            document
+                .getElementById(
+                    "exitProductInfo"
+                )
+                .classList
+                .add("hidden");
+
+
+            document.getElementById(
+                "exitStockPreview"
+            ).textContent =
+                "Selecciona producto y cantidad para calcular la existencia resultante.";
+
+
+            exitStep = 1;
+
+            actualizarPasoSalida();
+
+            mostrarToast(
+                "Registro de salida cancelado."
+            );
+        }
+    );
+
+
+document
+    .getElementById("btnNuevaSalida")
+    .addEventListener(
+        "click",
+        () => {
+
+            exitStep = 1;
+
+            document
+                .getElementById(
+                    "exitForm"
+                )
+                .reset();
+
+
+            document
+                .getElementById(
+                    "exitProductInfo"
+                )
+                .classList
+                .add("hidden");
+
+
+            document.getElementById(
+                "exitDateTime"
+            ).value =
+                new Date()
+                    .toLocaleString(
+                        "es-DO"
+                    );
+
+
+            actualizarPasoSalida();
+
+            mostrarSeccion(
+                "salidas"
+            );
+        }
+    );
+
+
+/* =========================================================
    INICIO
 ========================================================= */
 
 async function iniciarAplicacion() {
 
-   await Promise.all([
+  await Promise.all([
     cargarProductos(),
     cargarMovimientos(),
     cargarDatosEntradas(),
-    cargarProveedoresEntradas()
+    cargarProveedoresEntradas(),
+    cargarDatosSalidas()
 ]);
 
     document.getElementById(
@@ -2411,6 +2913,14 @@ async function iniciarAplicacion() {
     ).value =
         new Date()
             .toLocaleString("es-DO");
+
+    document.getElementById(
+    "exitDateTime"
+).value =
+    new Date()
+        .toLocaleString("es-DO");
+
+    actualizarPasoSalida();
 
     
     actualizarPasoEntrada();
