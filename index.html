@@ -1,25 +1,640 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-	<meta charset="UTF-8">
-	<title>StockControl - Salidas</title>
-	<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>STOCKTRON</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-	<h1>Registrar salida de productos</h1>
-  
-	<form id="salidaForm">
-		<label for="producto">Producto:</label>
-		<input type="text" id="producto" required>
 
-		<label for="cantidad">Cantidad:</label>
-		<input type="number" id="cantidad" min="1" required>
+    <div class="app-layout">
 
-		<button type="submit">Registrar salida</button>
-	</form>
+        <!-- =========================
+             MENÚ LATERAL
+        ========================== -->
+        <aside class="sidebar">
 
-	<div id="mensaje"></div>
+            <div class="brand">
+                <div class="brand-icon">S</div>
 
-	<script src="script.js"></script>
+                <div>
+                    <h1>STOCKTRON</h1>
+                    <span>Control de inventario</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <button
+                    class="nav-item active"
+                    data-section="panel"
+                >
+                    <span class="nav-icon">⌂</span>
+                    Panel
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-section="productos"
+                >
+                    <span class="nav-icon">▦</span>
+                    Productos
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-section="entradas"
+                >
+                    <span class="nav-icon">↓</span>
+                    Entradas
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-section="salidas"
+                >
+                    <span class="nav-icon">↑</span>
+                    Salidas
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-section="despachos"
+                >
+                    <span class="nav-icon">▣</span>
+                    Despachos
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-section="reportes"
+                >
+                    <span class="nav-icon">▤</span>
+                    Reportes
+                </button>
+
+                <button
+                    class="nav-item"
+                    data-section="usuarios"
+                >
+                    <span class="nav-icon">♙</span>
+                    Usuarios
+                </button>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-avatar">AD</div>
+
+                <div>
+                    <strong>Administrador</strong>
+                    <span>ADM-001</span>
+                </div>
+            </div>
+
+        </aside>
+
+
+        <!-- =========================
+             ÁREA PRINCIPAL
+        ========================== -->
+        <main class="main-content">
+
+            <!-- CABECERA -->
+            <header class="topbar">
+
+                <div>
+                    <h2 id="pageTitle">Panel</h2>
+                    <p id="pageSubtitle">
+                        Resumen general del inventario
+                    </p>
+                </div>
+
+                <div class="topbar-actions">
+
+                    <span class="system-status">
+                        <span class="status-dot"></span>
+                        Sistema activo
+                    </span>
+
+                </div>
+
+            </header>
+
+
+            <!-- =========================
+                 PANEL
+            ========================== -->
+            <section
+                id="panel"
+                class="content-section active-section"
+            >
+
+                <div class="metrics-grid">
+
+                    <article class="metric-card">
+                        <span class="metric-label">
+                            Productos registrados
+                        </span>
+
+                        <strong
+                            class="metric-value"
+                            id="metricProductos"
+                        >
+                            0
+                        </strong>
+
+                        <span class="metric-description">
+                            Productos en el catálogo
+                        </span>
+                    </article>
+
+
+                    <article class="metric-card">
+
+                        <span class="metric-label">
+                            Stock bajo
+                        </span>
+
+                        <strong
+                            class="metric-value warning"
+                            id="metricStockBajo"
+                        >
+                            0
+                        </strong>
+
+                        <span class="metric-description">
+                            Requieren atención
+                        </span>
+
+                    </article>
+
+
+                    <article class="metric-card">
+
+                        <span class="metric-label">
+                            Productos agotados
+                        </span>
+
+                        <strong
+                            class="metric-value danger"
+                            id="metricAgotados"
+                        >
+                            0
+                        </strong>
+
+                        <span class="metric-description">
+                            Sin existencia disponible
+                        </span>
+
+                    </article>
+
+
+                    <article class="metric-card">
+
+                        <span class="metric-label">
+                            Movimientos
+                        </span>
+
+                        <strong
+                            class="metric-value"
+                            id="metricMovimientos"
+                        >
+                            0
+                        </strong>
+
+                        <span class="metric-description">
+                            Registros históricos
+                        </span>
+
+                    </article>
+
+                </div>
+
+
+                <div class="panel-grid">
+
+                    <article class="panel-card">
+
+                        <div class="panel-card-header">
+
+                            <div>
+                                <h3>Inventario actual</h3>
+                                <p>
+                                    Estado de productos registrados
+                                </p>
+                            </div>
+
+                            <button
+                                class="secondary-button"
+                                data-go="productos"
+                            >
+                                Ver productos
+                            </button>
+
+                        </div>
+
+                        <div class="table-wrapper">
+
+                            <table>
+
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Marca</th>
+                                        <th>Existencia</th>
+                                        <th>Mínimo</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="dashboardProducts">
+
+                                    <tr>
+                                        <td
+                                            colspan="5"
+                                            class="empty-state"
+                                        >
+                                            Cargando inventario...
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="panel-card">
+
+                        <div class="panel-card-header">
+
+                            <div>
+                                <h3>Movimientos recientes</h3>
+                                <p>
+                                    Últimas operaciones registradas
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div
+                            id="recentMovements"
+                            class="movement-list"
+                        >
+
+                            <div class="empty-state">
+                                Cargando movimientos...
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 PRODUCTOS
+            ========================== -->
+            <section
+                id="productos"
+                class="content-section"
+            >
+
+                <div class="section-toolbar">
+
+                    <div>
+                        <h3>Productos</h3>
+                        <p>
+                            Catálogo general del inventario
+                        </p>
+                    </div>
+
+                    <button
+                        class="primary-button"
+                        id="btnNuevoProducto"
+                    >
+                        + Nuevo producto
+                    </button>
+
+                </div>
+
+
+                <div class="panel-card">
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>Marca</th>
+                                    <th>Stock</th>
+                                    <th>Mínimo</th>
+                                    <th>Máximo</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="productsTable">
+
+                                <tr>
+                                    <td
+                                        colspan="7"
+                                        class="empty-state"
+                                    >
+                                        Cargando productos...
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 ENTRADAS
+            ========================== -->
+            <section
+                id="entradas"
+                class="content-section"
+            >
+
+                <div class="section-toolbar">
+
+                    <div>
+                        <h3>Registro de entradas</h3>
+                        <p>
+                            Ingreso de mercancía al inventario
+                        </p>
+                    </div>
+
+                    <button
+                        class="primary-button"
+                        id="btnNuevaEntrada"
+                    >
+                        + Registrar entrada
+                    </button>
+
+                </div>
+
+
+                <div class="panel-card">
+
+                    <div class="empty-state large">
+                        Selecciona
+                        <strong>Registrar entrada</strong>
+                        para iniciar el proceso.
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 SALIDAS
+            ========================== -->
+            <section
+                id="salidas"
+                class="content-section"
+            >
+
+                <div class="section-toolbar">
+
+                    <div>
+                        <h3>Registro de salidas</h3>
+                        <p>
+                            Salida de mercancía del inventario
+                        </p>
+                    </div>
+
+                    <button
+                        class="primary-button"
+                        id="btnNuevaSalida"
+                    >
+                        + Registrar salida
+                    </button>
+
+                </div>
+
+
+                <div class="panel-card">
+
+                    <div class="empty-state large">
+                        Selecciona
+                        <strong>Registrar salida</strong>
+                        para iniciar el proceso.
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 DESPACHOS
+            ========================== -->
+            <section
+                id="despachos"
+                class="content-section"
+            >
+
+                <div class="section-toolbar">
+
+                    <div>
+                        <h3>Despachos</h3>
+                        <p>
+                            Gestión de pedidos y reservas
+                        </p>
+                    </div>
+
+                    <button
+                        class="primary-button"
+                        id="btnNuevoDespacho"
+                    >
+                        + Nuevo despacho
+                    </button>
+
+                </div>
+
+
+                <div class="panel-card">
+
+                    <div class="empty-state large">
+                        El módulo de despachos se incorporará
+                        sobre la estructura de reservas y
+                        salidas del inventario.
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 REPORTES
+            ========================== -->
+            <section
+                id="reportes"
+                class="content-section"
+            >
+
+                <div class="section-toolbar">
+
+                    <div>
+                        <h3>Reportes</h3>
+                        <p>
+                            Consultas e informes del sistema
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="reports-grid">
+
+                    <button class="report-card">
+                        <strong>Inventario general</strong>
+                        <span>
+                            Existencias y estado actual
+                        </span>
+                    </button>
+
+                    <button class="report-card">
+                        <strong>Stock bajo</strong>
+                        <span>
+                            Productos por debajo del mínimo
+                        </span>
+                    </button>
+
+                    <button class="report-card">
+                        <strong>Productos agotados</strong>
+                        <span>
+                            Productos sin existencia
+                        </span>
+                    </button>
+
+                    <button class="report-card">
+                        <strong>Lotes y vencimientos</strong>
+                        <span>
+                            Control de productos perecederos
+                        </span>
+                    </button>
+
+                    <button class="report-card">
+                        <strong>Historial de movimientos</strong>
+                        <span>
+                            Entradas y salidas registradas
+                        </span>
+                    </button>
+
+                    <button class="report-card">
+                        <strong>Entradas por tipo</strong>
+                        <span>
+                            Movimientos TE-01 a TE-10
+                        </span>
+                    </button>
+
+                    <button class="report-card">
+                        <strong>Salidas por tipo</strong>
+                        <span>
+                            Movimientos TS-01 a TS-15
+                        </span>
+                    </button>
+
+                    <button class="report-card">
+                        <strong>Kardex de producto</strong>
+                        <span>
+                            Historial individual por producto
+                        </span>
+                    </button>
+
+                    <button class="report-card">
+                        <strong>Operaciones rechazadas</strong>
+                        <span>
+                            Movimientos no aprobados
+                        </span>
+                    </button>
+
+                    <button class="report-card">
+                        <strong>Compras por proveedor</strong>
+                        <span>
+                            Compras registradas por proveedor
+                        </span>
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 USUARIOS
+            ========================== -->
+            <section
+                id="usuarios"
+                class="content-section"
+            >
+
+                <div class="section-toolbar">
+
+                    <div>
+                        <h3>Usuarios</h3>
+                        <p>
+                            Administración de acceso al sistema
+                        </p>
+                    </div>
+
+                    <button
+                        class="primary-button"
+                        id="btnNuevoUsuario"
+                    >
+                        + Nuevo usuario
+                    </button>
+
+                </div>
+
+
+                <div class="panel-card">
+
+                    <div class="empty-state large">
+                        Gestión de administradores y empleados.
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <div
+        id="toast"
+        class="toast"
+    ></div>
+
+    <script src="script.js"></script>
+
 </body>
 </html>
