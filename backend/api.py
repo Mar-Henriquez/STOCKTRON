@@ -143,6 +143,152 @@ def create_app(ruta_bd=None, reloj=datetime.now):
             con(), producto_id=a.get("producto"), tipo=a.get("tipo"), desde=a.get("desde"),
             hasta=a.get("hasta"), direccion=a.get("direccion"), estado=a.get("estado")))
 
+      @app.post("/api/products")
+    def crear_producto():
+        cuerpo = request.get_json(silent=True)
+
+        if not isinstance(cuerpo, dict):
+            return jsonify({
+                "errores": [
+                    "El cuerpo de la petición debe ser un JSON."
+                ]
+            }), 400
+
+        producto_id = str(
+            cuerpo.get("id", "")
+        ).strip()
+
+        nombre = str(
+            cuerpo.get("nombre", "")
+        ).strip()
+
+        marca = str(
+            cuerpo.get("marca", "")
+        ).strip() or None
+
+        try:
+            stock_actual = int(
+                cuerpo.get("stock_actual", 0)
+            )
+
+            stock_minimo = int(
+                cuerpo.get("stock_minimo", 0)
+            )
+
+            stock_maximo_raw = cuerpo.get(
+                "stock_maximo"
+            )
+
+            stock_maximo = (
+                int(stock_maximo_raw)
+                if stock_maximo_raw not in (None, "")
+                else None
+            )
+
+        except (TypeError, ValueError):
+            return jsonify({
+                "errores": [
+                    "Los valores de stock deben ser números enteros."
+                ]
+            }), 400
+
+        perecedero = cuerpo.get("perecedero", False)
+
+        if isinstance(perecedero, bool):
+            perecedero = 1 if perecedero else 0
+        elif perecedero in (0, 1):
+            perecedero = int(perecedero)
+        else:
+            return jsonify({
+                "errores": [
+                    "El campo perecedero debe ser verdadero o falso."
+                ]
+            }), 400
+
+        errores = []
+
+        if not producto_id:
+            errores.append(
+                "El código del producto es obligatorio."
+            )
+
+        if not nombre:
+            errores.append(
+                "El nombre del producto es obligatorio."
+            )
+
+        if stock_actual < 0:
+            errores.append(
+                "El stock actual no puede ser negativo."
+            )
+
+        if stock_minimo < 0:
+            errores.append(
+                "El stock mínimo no puede ser negativo."
+            )
+
+        if (
+            stock_maximo is not None
+            and stock_maximo < stock_minimo
+        ):
+            errores.append(
+                "El stock máximo no puede ser menor "
+                "que el stock mínimo."
+            )
+
+        if errores:
+            return jsonify({
+                "errores": errores
+            }), 400
+
+        existente = con().execute(
+            """
+            SELECT id
+            FROM productos
+            WHERE id = ?
+            """,
+            (producto_id,)
+        ).fetchone()
+
+        if existente:
+            return jsonify({
+                "errores": [
+                    "Ya existe un producto con ese código."
+                ]
+            }), 409
+
+        con().execute(
+            """
+            INSERT INTO productos
+            (
+                id,
+                nombre,
+                marca,
+                stock_actual,
+                stock_minimo,
+                stock_maximo,
+                perecedero
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                producto_id,
+                nombre,
+                marca,
+                stock_actual,
+                stock_minimo,
+                stock_maximo,
+                perecedero
+            )
+        )
+
+        producto = obtener_producto(
+            con(),
+            producto_id
+        )
+
+        return jsonify(producto), 201
+
     @app.get("/api/products")
     def productos():
         filas = []
