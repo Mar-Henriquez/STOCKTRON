@@ -675,16 +675,6 @@ productForm.addEventListener(
 
     }
 );
-document
-    .getElementById("btnNuevaEntrada")
-    .addEventListener("click", () => {
-
-        mostrarToast(
-            "El asistente de entradas se implementará a continuación."
-        );
-
-    });
-
 
 document
     .getElementById("btnNuevaSalida")
@@ -718,6 +708,458 @@ document
 
     });
 
+/* =========================================================
+   ASISTENTE DE ENTRADAS
+========================================================= */
+
+let entryStep = 1;
+let entryProducts = [];
+
+
+async function cargarDatosEntradas() {
+
+    try {
+
+        const [respuestaProductos, respuestaTipos] =
+            await Promise.all([
+                fetch("/api/products"),
+                fetch("/api/types?direccion=ENTRADA")
+            ]);
+
+        if (
+            !respuestaProductos.ok ||
+            !respuestaTipos.ok
+        ) {
+            throw new Error(
+                "No se pudieron cargar los datos del formulario."
+            );
+        }
+
+        entryProducts =
+            await respuestaProductos.json();
+
+        const tipos =
+            await respuestaTipos.json();
+
+
+        const productSelect =
+            document.getElementById(
+                "entryProduct"
+            );
+
+        productSelect.innerHTML = `
+            <option value="">
+                Selecciona un producto
+            </option>
+        `;
+
+        entryProducts.forEach(producto => {
+
+            const opcion =
+                document.createElement("option");
+
+            opcion.value = producto.id;
+
+            opcion.textContent =
+                `${producto.id} · ${producto.nombre}`;
+
+            productSelect.appendChild(opcion);
+        });
+
+
+        const typeSelect =
+            document.getElementById(
+                "entryType"
+            );
+
+        typeSelect.innerHTML = `
+            <option value="">
+                Selecciona el tipo
+            </option>
+        `;
+
+        tipos.forEach(tipo => {
+
+            const opcion =
+                document.createElement("option");
+
+            opcion.value = tipo.codigo;
+
+            opcion.textContent =
+                `${tipo.codigo} · ${tipo.nombre}`;
+
+            typeSelect.appendChild(opcion);
+        });
+
+    } catch (error) {
+
+        mostrarToast(error.message);
+    }
+}
+
+
+function actualizarPasoEntrada() {
+
+    document
+        .querySelectorAll(
+            "[data-entry-panel]"
+        )
+        .forEach(panel => {
+
+            panel.classList.toggle(
+                "active",
+                Number(panel.dataset.entryPanel)
+                    === entryStep
+            );
+
+        });
+
+
+    document
+        .querySelectorAll(
+            "[data-entry-step]"
+        )
+        .forEach(indicador => {
+
+            const numero =
+                Number(
+                    indicador.dataset.entryStep
+                );
+
+            indicador.classList.toggle(
+                "active",
+                numero === entryStep
+            );
+
+            indicador.classList.toggle(
+                "completed",
+                numero < entryStep
+            );
+
+        });
+
+
+    document.getElementById(
+        "entryPrevious"
+    ).disabled = entryStep === 1;
+
+
+    document.getElementById(
+        "entryNext"
+    ).classList.toggle(
+        "hidden",
+        entryStep === 4
+    );
+
+
+    document.getElementById(
+        "entrySubmit"
+    ).classList.toggle(
+        "hidden",
+        entryStep !== 4
+    );
+}
+
+
+function validarPasoEntrada() {
+
+    const errores = [];
+
+
+    if (entryStep === 1) {
+
+        const producto =
+            document.getElementById(
+                "entryProduct"
+            ).value;
+
+        if (!producto) {
+            errores.push(
+                "Debes seleccionar un producto."
+            );
+        }
+    }
+
+
+    if (entryStep === 2) {
+
+        const cantidad =
+            Number(
+                document.getElementById(
+                    "entryQuantity"
+                ).value
+            );
+
+        const tipo =
+            document.getElementById(
+                "entryType"
+            ).value;
+
+        if (
+            !Number.isInteger(cantidad) ||
+            cantidad <= 0
+        ) {
+            errores.push(
+                "La cantidad debe ser un entero mayor que cero."
+            );
+        }
+
+        if (!tipo) {
+            errores.push(
+                "Debes seleccionar el tipo de entrada."
+            );
+        }
+    }
+
+
+    if (errores.length > 0) {
+
+        mostrarToast(
+            errores[0]
+        );
+
+        return false;
+    }
+
+    return true;
+}
+
+
+document
+    .getElementById("entryProduct")
+    .addEventListener(
+        "change",
+        event => {
+
+            const producto =
+                entryProducts.find(
+                    item =>
+                        item.id ===
+                        event.target.value
+                );
+
+            const resumen =
+                document.getElementById(
+                    "entryProductInfo"
+                );
+
+
+            if (!producto) {
+
+                resumen.classList.add(
+                    "hidden"
+                );
+
+                return;
+            }
+
+
+            document.getElementById(
+                "entryCurrentStock"
+            ).textContent =
+                producto.stock_actual;
+
+
+            document.getElementById(
+                "entryMinimumStock"
+            ).textContent =
+                producto.stock_minimo;
+
+
+            document.getElementById(
+                "entryProductStatus"
+            ).textContent =
+                producto.estado;
+
+
+            document.getElementById(
+                "entryProductBrand"
+            ).textContent =
+                producto.marca || "—";
+
+
+            resumen.classList.remove(
+                "hidden"
+            );
+
+        }
+    );
+
+
+function actualizarVistaStockEntrada() {
+
+    const productoId =
+        document.getElementById(
+            "entryProduct"
+        ).value;
+
+    const cantidad =
+        Number(
+            document.getElementById(
+                "entryQuantity"
+            ).value
+        );
+
+
+    const producto =
+        entryProducts.find(
+            item => item.id === productoId
+        );
+
+
+    const vista =
+        document.getElementById(
+            "entryStockPreview"
+        );
+
+
+    if (
+        !producto ||
+        !Number.isInteger(cantidad) ||
+        cantidad <= 0
+    ) {
+
+        vista.textContent =
+            "Selecciona producto y cantidad para calcular la existencia resultante.";
+
+        return;
+    }
+
+
+    const nuevoStock =
+        producto.stock_actual + cantidad;
+
+
+    vista.textContent =
+        `Existencia actual: ${producto.stock_actual} · ` +
+        `Entrada: +${cantidad} · ` +
+        `Existencia resultante: ${nuevoStock}`;
+}
+
+
+document
+    .getElementById("entryQuantity")
+    .addEventListener(
+        "input",
+        actualizarVistaStockEntrada
+    );
+
+
+document
+    .getElementById("entryProduct")
+    .addEventListener(
+        "change",
+        actualizarVistaStockEntrada
+    );
+
+
+document
+    .getElementById("entryNext")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (!validarPasoEntrada()) {
+                return;
+            }
+
+
+            if (entryStep < 4) {
+                entryStep += 1;
+            }
+
+
+            actualizarPasoEntrada();
+        }
+    );
+
+
+document
+    .getElementById("entryPrevious")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (entryStep > 1) {
+                entryStep -= 1;
+            }
+
+            actualizarPasoEntrada();
+        }
+    );
+
+
+document
+    .getElementById("entryCancel")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById(
+                    "entryForm"
+                )
+                .reset();
+
+            document
+                .getElementById(
+                    "entryProductInfo"
+                )
+                .classList
+                .add("hidden");
+
+
+            document.getElementById(
+                "entryStockPreview"
+            ).textContent =
+                "Selecciona producto y cantidad para calcular la existencia resultante.";
+
+
+            entryStep = 1;
+
+            actualizarPasoEntrada();
+
+            mostrarToast(
+                "Registro de entrada cancelado."
+            );
+        }
+    );
+
+
+document
+    .getElementById("btnNuevaEntrada")
+    .addEventListener(
+        "click",
+        () => {
+
+            entryStep = 1;
+
+            document
+                .getElementById(
+                    "entryForm"
+                )
+                .reset();
+
+            document
+                .getElementById(
+                    "entryProductInfo"
+                )
+                .classList
+                .add("hidden");
+
+
+            document.getElementById(
+                "entryDateTime"
+            ).value =
+                new Date()
+                    .toLocaleString("es-DO");
+
+
+            actualizarPasoEntrada();
+
+            mostrarSeccion("entradas");
+        }
+    );
 
 /* =========================================================
    INICIO
@@ -729,8 +1171,17 @@ async function iniciarAplicacion() {
 
     await Promise.all([
         cargarProductos(),
-        cargarMovimientos()
+        cargarMovimientos(),
+        cargarDatosEntradas()
     ]);
+
+    document.getElementById(
+        "entryDateTime"
+    ).value =
+        new Date()
+            .toLocaleString("es-DO");
+
+    actualizarPasoEntrada();
 }
 
 
