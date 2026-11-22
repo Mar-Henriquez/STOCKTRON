@@ -1106,6 +1106,8 @@ if (entryStep === 4) {
 }
 
 actualizarPasoEntrada();
+              }
+    );
 
 
 document
