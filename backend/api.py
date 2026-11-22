@@ -305,6 +305,31 @@ def create_app(ruta_bd=None, reloj=datetime.now):
             return jsonify({"errores": ["Producto no encontrado en el inventario."]}), 404
         return jsonify(p)
 
+
+
+      @app.get("/api/suppliers")
+    def proveedores():
+        filas = con().execute(
+            """
+            SELECT
+                id,
+                nombre,
+                rnc,
+                contacto,
+                telefono,
+                correo,
+                estado
+            FROM proveedores
+            WHERE estado = 'Activo'
+            ORDER BY nombre
+            """
+        ).fetchall()
+
+        return jsonify([
+            dict(fila)
+            for fila in filas
+        ])
+      
     @app.get("/api/types")
     def tipos():
         sql, params = "SELECT * FROM tipos_movimiento", []
