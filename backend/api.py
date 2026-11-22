@@ -8,7 +8,7 @@ Ejecutar:   python api.py        (queda en http://127.0.0.1:5000)
 """
 from datetime import datetime
 
-from flask import Flask, g, jsonify, request
+from flask import Flask, g, jsonify, request, send_from_directory
 
 import db
 from movimientos import (consultar_movimientos, estado_producto, obtener_producto,
@@ -71,7 +71,10 @@ def _leer_cuerpo(cuerpo):
 
 
 def create_app(ruta_bd=None, reloj=datetime.now):
-    app = Flask(__name__)
+    app = Flask(
+        __name__,
+        static_folder=None
+    )
     app.json.ensure_ascii = False          # que los acentos se vean bien
     ruta = ruta_bd or db.RUTA_BD
 
@@ -99,6 +102,27 @@ def create_app(ruta_bd=None, reloj=datetime.now):
         r = funcion(con(), producto, cantidad, tipo, usuario, datos, reloj())
         r["estado"] = "Aprobado" if r["aprobado"] else "Rechazado"
         return jsonify(r), (201 if r["aprobado"] else _codigo_http(r["errores"]))
+
+      @app.get("/")
+    def frontend():
+        return send_from_directory(
+            "..",
+            "index.html"
+        )
+
+    @app.get("/style.css")
+    def estilos():
+        return send_from_directory(
+            "..",
+            "style.css"
+        )
+
+    @app.get("/script.js")
+    def javascript():
+        return send_from_directory(
+            "..",
+            "script.js"
+        )
 
     @app.get("/api/health")
     def health():
