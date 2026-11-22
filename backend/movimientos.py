@@ -487,9 +487,28 @@ def _registrar(con, direccion, producto_id, cantidad, tipo, usuario_id, datos, a
         errores = _validar(con, direccion, prod, cant, tipo, usuario, datos, ahora)
         folio = _siguiente_folio(con, direccion, ahora)
 
-        if errores:                                   # RS-19 / RS-20: se rechaza y NO se toca el stock
-            _guardar(con, folio, producto_id, tipo, cant or 0, ahora, usuario_id, datos,
-                     "Rechazado", " ".join(errores), stock_ant, stock_ant)
+               if errores:
+            cantidad_historial = (
+                cant
+                if cant is not None and cant > 0
+                else 0
+            )
+
+            _guardar(
+                con,
+                folio,
+                producto_id,
+                tipo,
+                cantidad_historial,
+                ahora,
+                usuario_id,
+                datos,
+                "Rechazado",
+                " ".join(errores),
+                stock_ant,
+                stock_ant
+            )
+                   
             con.execute("COMMIT")
             return {"aprobado": False, "folio": folio, "errores": errores, "advertencias": [],
                     "stock_anterior": stock_ant, "stock_nuevo": stock_ant}
