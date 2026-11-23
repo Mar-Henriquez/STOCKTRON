@@ -4005,6 +4005,362 @@ document
         }
     );
 
+/* =========================================================
+   ASISTENTE DE DESPACHOS
+========================================================= */
+
+let dispatchStep = 1;
+
+
+function actualizarPasoDespacho() {
+
+    document
+        .querySelectorAll(
+            "[data-dispatch-panel]"
+        )
+        .forEach(panel => {
+
+            panel.classList.toggle(
+                "active",
+                Number(
+                    panel.dataset.dispatchPanel
+                ) === dispatchStep
+            );
+        });
+
+
+    document
+        .querySelectorAll(
+            "[data-dispatch-step]"
+        )
+        .forEach(indicador => {
+
+            const numero =
+                Number(
+                    indicador.dataset.dispatchStep
+                );
+
+            indicador.classList.toggle(
+                "active",
+                numero === dispatchStep
+            );
+
+            indicador.classList.toggle(
+                "completed",
+                numero < dispatchStep
+            );
+        });
+
+
+    document.getElementById(
+        "dispatchPrevious"
+    ).disabled =
+        dispatchStep === 1;
+
+
+    document.getElementById(
+        "dispatchNext"
+    ).classList.toggle(
+        "hidden",
+        dispatchStep === 4
+    );
+
+
+    document.getElementById(
+        "dispatchSubmit"
+    ).classList.toggle(
+        "hidden",
+        dispatchStep !== 4
+    );
+}
+
+
+function validarPasoDespacho() {
+
+    if (dispatchStep === 1) {
+
+        const origen =
+            document.getElementById(
+                "dispatchOrigin"
+            ).value;
+
+        const factura =
+            document.getElementById(
+                "dispatchInvoice"
+            ).value.trim();
+
+        const tipoComprobante =
+            document.getElementById(
+                "dispatchInvoiceType"
+            ).value;
+
+        const fechaFactura =
+            document.getElementById(
+                "dispatchInvoiceDate"
+            ).value;
+
+        const cliente =
+            document.getElementById(
+                "dispatchClient"
+            ).value.trim();
+
+        const respaldo =
+            document.getElementById(
+                "dispatchSupportDocument"
+            ).value.trim();
+
+
+        if (!origen) {
+
+            mostrarToast(
+                "Debes seleccionar el origen del despacho."
+            );
+
+            return false;
+        }
+
+
+        if (!cliente) {
+
+            mostrarToast(
+                "Debes indicar el cliente o razón social."
+            );
+
+            return false;
+        }
+
+
+        if (
+            origen === "TD-01" ||
+            origen === "TD-02"
+        ) {
+
+            if (!factura) {
+
+                mostrarToast(
+                    "Debes indicar el número de factura e-NCF."
+                );
+
+                return false;
+            }
+
+
+            if (!tipoComprobante) {
+
+                mostrarToast(
+                    "Debes indicar el tipo de comprobante."
+                );
+
+                return false;
+            }
+
+
+            if (!fechaFactura) {
+
+                mostrarToast(
+                    "Debes indicar la fecha de la factura."
+                );
+
+                return false;
+            }
+        }
+
+
+        if (
+            origen === "TD-03" &&
+            !respaldo
+        ) {
+
+            mostrarToast(
+                "El despacho manual requiere un documento de respaldo."
+            );
+
+            return false;
+        }
+    }
+
+
+    return true;
+}
+
+
+function actualizarCamposOrigenDespacho() {
+
+    const origen =
+        document.getElementById(
+            "dispatchOrigin"
+        ).value;
+
+    const factura =
+        document.getElementById(
+            "dispatchInvoice"
+        );
+
+    const tipo =
+        document.getElementById(
+            "dispatchInvoiceType"
+        );
+
+    const fecha =
+        document.getElementById(
+            "dispatchInvoiceDate"
+        );
+
+    const respaldo =
+        document.getElementById(
+            "dispatchSupportDocument"
+        );
+
+
+    const usaFactura =
+        origen === "TD-01" ||
+        origen === "TD-02";
+
+
+    factura.required =
+        usaFactura;
+
+    tipo.required =
+        usaFactura;
+
+    fecha.required =
+        usaFactura;
+
+
+    respaldo.required =
+        origen === "TD-03";
+
+
+    factura.disabled =
+        origen === "TD-03";
+
+    tipo.disabled =
+        origen === "TD-03";
+
+    fecha.disabled =
+        origen === "TD-03";
+
+
+    respaldo.disabled =
+        usaFactura;
+
+
+    if (origen === "TD-03") {
+
+        factura.value = "";
+        tipo.value = "";
+        fecha.value = "";
+
+    } else if (usaFactura) {
+
+        respaldo.value = "";
+    }
+}
+
+
+document
+    .getElementById("dispatchOrigin")
+    .addEventListener(
+        "change",
+        actualizarCamposOrigenDespacho
+    );
+
+
+document
+    .getElementById("dispatchNext")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (!validarPasoDespacho()) {
+                return;
+            }
+
+
+            if (dispatchStep < 4) {
+                dispatchStep += 1;
+            }
+
+
+            actualizarPasoDespacho();
+        }
+    );
+
+
+document
+    .getElementById("dispatchPrevious")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (dispatchStep > 1) {
+                dispatchStep -= 1;
+            }
+
+
+            actualizarPasoDespacho();
+        }
+    );
+
+
+document
+    .getElementById("dispatchCancel")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById(
+                    "dispatchForm"
+                )
+                .reset();
+
+
+            dispatchStep = 1;
+
+            actualizarCamposOrigenDespacho();
+            actualizarPasoDespacho();
+
+            mostrarToast(
+                "Registro de despacho cancelado."
+            );
+        }
+    );
+
+
+document
+    .getElementById("btnNuevoDespacho")
+    .addEventListener(
+        "click",
+        () => {
+
+            dispatchStep = 1;
+
+            document
+                .getElementById(
+                    "dispatchForm"
+                )
+                .reset();
+
+
+            document.getElementById(
+                "dispatchDateTime"
+            ).value =
+                new Date()
+                    .toLocaleString(
+                        "es-DO"
+                    );
+
+
+            actualizarCamposOrigenDespacho();
+            actualizarPasoDespacho();
+
+            mostrarSeccion(
+                "despachos"
+            );
+        }
+    );
+
 
 /* =========================================================
    INICIO
@@ -4038,8 +4394,18 @@ async function iniciarAplicacion() {
     actualizarPasoEntrada();
 }
 
+document.getElementById(
+    "dispatchDateTime"
+).value =
+    new Date()
+        .toLocaleString("es-DO");
+
+actualizarCamposOrigenDespacho();
+
+actualizarPasoDespacho();
 
 document.addEventListener(
     "DOMContentLoaded",
     iniciarAplicacion
 );
+
