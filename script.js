@@ -3250,6 +3250,342 @@ function renderizarCamposSalida() {
     }
 }
 
+function obtenerDatosParticularesSalida() {
+
+    const datos = {};
+
+    const valor = id =>
+        document.getElementById(id)?.value?.trim() || "";
+
+
+    if (valor("exitReference")) {
+        datos.referencia =
+            valor("exitReference");
+    }
+
+    if (valor("exitObservation")) {
+        datos.observacion =
+            valor("exitObservation");
+    }
+
+    if (valor("exitExpiration")) {
+        datos.fecha_vencimiento =
+            valor("exitExpiration");
+    }
+
+    if (valor("exitSupplier")) {
+        datos.proveedor =
+            valor("exitSupplier");
+    }
+
+    if (valor("exitReason")) {
+        datos.motivo =
+            valor("exitReason");
+    }
+
+    if (valor("exitDestination")) {
+        datos.destino =
+            valor("exitDestination");
+    }
+
+    if (valor("exitRecipient")) {
+        datos.destinatario =
+            valor("exitRecipient");
+    }
+
+    if (valor("exitCause")) {
+        datos.causa =
+            valor("exitCause");
+    }
+
+    if (valor("exitAuthorization")) {
+        datos.autorizacion =
+            valor("exitAuthorization");
+    }
+
+
+    return datos;
+}
+
+
+function validarDetallesSalida() {
+
+    const campos =
+        document.querySelectorAll(
+            "#exitDynamicFields [required]"
+        );
+
+
+    for (const campo of campos) {
+
+        if (!campo.checkValidity()) {
+
+            campo.reportValidity();
+
+            return false;
+        }
+    }
+
+
+    return true;
+}
+
+
+function prepararConfirmacionSalida() {
+
+    const productoId =
+        document.getElementById(
+            "exitProduct"
+        ).value;
+
+
+    const producto =
+        exitProducts.find(
+            item =>
+                item.id === productoId
+        );
+
+
+    const cantidad =
+        Number(
+            document.getElementById(
+                "exitQuantity"
+            ).value
+        );
+
+
+    const tipoSelect =
+        document.getElementById(
+            "exitType"
+        );
+
+
+    const tipoTexto =
+        tipoSelect.options[
+            tipoSelect.selectedIndex
+        ]?.textContent || "";
+
+
+    const datos =
+        obtenerDatosParticularesSalida();
+
+
+    const stockResultante =
+        producto.stock_actual -
+        cantidad;
+
+
+    let detallesExtra = "";
+
+
+    if (datos.referencia) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Referencia</span>
+                <strong>
+                    ${escapeHtml(
+                        datos.referencia
+                    )}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.proveedor) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Proveedor</span>
+                <strong>
+                    ${escapeHtml(
+                        datos.proveedor
+                    )}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.motivo) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Motivo</span>
+                <strong>
+                    ${escapeHtml(
+                        datos.motivo
+                    )}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.destino) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Destino</span>
+                <strong>
+                    ${escapeHtml(
+                        datos.destino
+                    )}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.destinatario) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Destinatario</span>
+                <strong>
+                    ${escapeHtml(
+                        datos.destinatario
+                    )}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.causa) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Causa</span>
+                <strong>
+                    ${escapeHtml(
+                        datos.causa
+                    )}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.autorizacion) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Autorización</span>
+                <strong>
+                    ${escapeHtml(
+                        datos.autorizacion
+                    )}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.fecha_vencimiento) {
+
+        detallesExtra += `
+            <div class="review-item">
+                <span>Fecha de vencimiento</span>
+                <strong>
+                    ${escapeHtml(
+                        datos.fecha_vencimiento
+                    )}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    if (datos.observacion) {
+
+        detallesExtra += `
+            <div class="review-item full">
+                <span>Observación</span>
+                <strong>
+                    ${escapeHtml(
+                        datos.observacion
+                    )}
+                </strong>
+            </div>
+        `;
+    }
+
+
+    document.getElementById(
+        "exitReview"
+    ).innerHTML = `
+
+        <div class="review-item">
+            <span>Producto</span>
+            <strong>
+                ${escapeHtml(
+                    producto.nombre
+                )}
+            </strong>
+        </div>
+
+        <div class="review-item">
+            <span>Código</span>
+            <strong>
+                ${escapeHtml(
+                    producto.id
+                )}
+            </strong>
+        </div>
+
+        <div class="review-item">
+            <span>Marca</span>
+            <strong>
+                ${escapeHtml(
+                    producto.marca || "—"
+                )}
+            </strong>
+        </div>
+
+        <div class="review-item">
+            <span>Cantidad</span>
+            <strong>
+                ${cantidad}
+            </strong>
+        </div>
+
+        <div class="review-item full">
+            <span>Tipo de salida</span>
+            <strong>
+                ${escapeHtml(
+                    tipoTexto
+                )}
+            </strong>
+        </div>
+
+        <div class="review-item">
+            <span>Existencia anterior</span>
+            <strong>
+                ${producto.stock_actual}
+            </strong>
+        </div>
+
+        <div class="review-item">
+            <span>Existencia resultante</span>
+            <strong>
+                ${stockResultante}
+            </strong>
+        </div>
+
+        ${detallesExtra}
+
+        <div class="review-item">
+            <span>Responsable</span>
+            <strong>
+                ADM-001
+            </strong>
+        </div>
+    `;
+}
+
+
 function actualizarVistaStockSalida() {
 
     const productoId =
@@ -3390,20 +3726,30 @@ document
             }
 
 
-           if (exitStep < 4) {
-               exitStep += 1;
-            
-           }
+          if (exitStep === 3) {
 
-            if (exitStep === 3) {
-    
-                renderizarCamposSalida();
-
-            }
+    if (!validarDetallesSalida()) {
+        return;
+    }
+}
 
 
+if (exitStep < 4) {
+    exitStep += 1;
+}
 
-            actualizarPasoSalida();
+
+if (exitStep === 3) {
+    renderizarCamposSalida();
+}
+
+
+if (exitStep === 4) {
+    prepararConfirmacionSalida();
+}
+
+
+actualizarPasoSalida();
         
         }
     );
@@ -3421,6 +3767,162 @@ document
 
 
             actualizarPasoSalida();
+        }
+    );
+
+document
+    .getElementById("exitForm")
+    .addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            if (!validarDetallesSalida()) {
+                return;
+            }
+
+
+            const cuerpo = {
+
+                product_id:
+                    document.getElementById(
+                        "exitProduct"
+                    ).value,
+
+                quantity:
+                    Number(
+                        document.getElementById(
+                            "exitQuantity"
+                        ).value
+                    ),
+
+                exit_type:
+                    document.getElementById(
+                        "exitType"
+                    ).value,
+
+                operator_id:
+                    "ADM-001",
+
+                exit_details:
+                    obtenerDatosParticularesSalida()
+            };
+
+
+            const errores =
+                document.getElementById(
+                    "exitFormErrors"
+                );
+
+
+            errores.innerHTML = "";
+
+
+            try {
+
+                const respuesta =
+                    await fetch(
+                        "/api/exit-records",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    cuerpo
+                                )
+                        }
+                    );
+
+
+                const resultado =
+                    await respuesta.json();
+
+
+                if (!respuesta.ok) {
+
+                    errores.innerHTML =
+                        (
+                            resultado.errores ||
+                            [
+                                "No se pudo registrar la salida."
+                            ]
+                        )
+                        .map(
+                            error =>
+                                `<div>
+                                    ${escapeHtml(
+                                        error
+                                    )}
+                                </div>`
+                        )
+                        .join("");
+
+                    return;
+                }
+
+
+                mostrarToast(
+                    `Salida ${resultado.folio} registrada correctamente.`
+                );
+
+
+                await Promise.all([
+                    cargarProductos(),
+                    cargarMovimientos(),
+                    cargarDatosEntradas(),
+                    cargarDatosSalidas()
+                ]);
+
+
+                document
+                    .getElementById(
+                        "exitForm"
+                    )
+                    .reset();
+
+
+                document
+                    .getElementById(
+                        "exitProductInfo"
+                    )
+                    .classList
+                    .add("hidden");
+
+
+                document.getElementById(
+                    "exitDynamicFields"
+                ).innerHTML = "";
+
+
+                document.getElementById(
+                    "exitReview"
+                ).innerHTML = "";
+
+
+                exitStep = 1;
+
+                actualizarPasoSalida();
+
+                mostrarSeccion(
+                    "panel"
+                );
+
+            } catch (error) {
+
+                errores.innerHTML =
+                    `<div>
+                        ${escapeHtml(
+                            error.message
+                        )}
+                    </div>`;
+            }
         }
     );
 
