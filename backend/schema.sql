@@ -19,8 +19,14 @@ CREATE TABLE IF NOT EXISTS productos (
                         stock_maximo IS NULL
                         OR stock_maximo >= stock_minimo
                     ),
-    perecedero      INTEGER NOT NULL DEFAULT 0
-                    CHECK (perecedero IN (0, 1))
+   perecedero      INTEGER NOT NULL DEFAULT 0
+                CHECK (perecedero IN (0, 1)),
+
+precio_venta    REAL NOT NULL DEFAULT 0
+                CHECK (precio_venta >= 0),
+
+tasa_itbis      REAL NOT NULL DEFAULT 0.18
+                CHECK (tasa_itbis IN (0, 0.16, 0.18))
 );
 
 -- =========================================================
