@@ -282,6 +282,29 @@ def iniciar_bd(con, con_datos_demo=True):
             PRODUCTOS_DEMO,
         )
 
+        
+        # Actualizar precio e ITBIS de los productos demo
+        # aunque ya existieran antes de la migración.
+
+        con.executemany(
+            """
+            UPDATE productos
+            SET
+                precio_venta = ?,
+                tasa_itbis = ?
+            WHERE id = ?
+            """,
+            [
+                (
+                    producto[7],
+                    producto[8],
+                    producto[0],
+                )
+                for producto in PRODUCTOS_DEMO
+            ],
+        )
+        
+        
         # -------------------------------------------------
         # Proveedores
         # -------------------------------------------------
