@@ -1,5 +1,3 @@
--- StockControl · Esquema de base de datos (SQLite)
--- Versión refactorizada según el diseño funcional aprobado.
 
 PRAGMA foreign_keys = ON;
 
@@ -7,7 +5,7 @@ PRAGMA foreign_keys = ON;
 -- PRODUCTOS
 -- =========================================================
 CREATE TABLE IF NOT EXISTS productos (
-    id              TEXT PRIMARY KEY,                       -- ej. PROD-101
+    id              TEXT PRIMARY KEY,                       
     nombre          TEXT NOT NULL,
     marca           TEXT,
     stock_actual    INTEGER NOT NULL DEFAULT 0
@@ -33,7 +31,7 @@ tasa_itbis      REAL NOT NULL DEFAULT 0.18
 -- USUARIOS
 -- =========================================================
 CREATE TABLE IF NOT EXISTS usuarios (
-    id                  TEXT PRIMARY KEY,                   -- ej. EMP-023
+    id                  TEXT PRIMARY KEY,                   
     nombre              TEXT NOT NULL,
     correo              TEXT UNIQUE,
     contrasena_hash     TEXT,
@@ -64,7 +62,7 @@ CREATE TABLE IF NOT EXISTS proveedores (
 -- TIPOS DE MOVIMIENTO
 -- =========================================================
 CREATE TABLE IF NOT EXISTS tipos_movimiento (
-    codigo          TEXT PRIMARY KEY,                       -- TS-01..TS-15 / TE-01..TE-10
+    codigo          TEXT PRIMARY KEY,                       
     nombre          TEXT NOT NULL,
     direccion       TEXT NOT NULL
                     CHECK (direccion IN ('ENTRADA', 'SALIDA')),
@@ -77,12 +75,12 @@ CREATE TABLE IF NOT EXISTS tipos_movimiento (
 -- Historial único de entradas y salidas.
 -- =========================================================
 CREATE TABLE IF NOT EXISTS movimientos (
-    folio               TEXT PRIMARY KEY,                  -- SC-2026-001 / EC-2026-001
+    folio               TEXT PRIMARY KEY,                  
     producto_id         TEXT NOT NULL,
     tipo_codigo         TEXT NOT NULL,
     cantidad            INTEGER NOT NULL
                         CHECK (cantidad >= 0),
-    fecha_hora          TEXT NOT NULL,                     -- ISO 8601
+    fecha_hora          TEXT NOT NULL,                     
     usuario_id          TEXT NOT NULL,
     referencia          TEXT,
     estado              TEXT NOT NULL
@@ -108,8 +106,6 @@ CREATE TABLE IF NOT EXISTS movimientos (
 
 -- =========================================================
 -- DETALLE DE MOVIMIENTO
--- Datos específicos según el tipo de entrada o salida.
--- Una fila como máximo por movimiento.
 -- =========================================================
 CREATE TABLE IF NOT EXISTS detalle_movimiento (
     folio                   TEXT PRIMARY KEY,
