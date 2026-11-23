@@ -1,11 +1,4 @@
-"""
-StockControl · API web (Flask).
 
-La API NO contiene reglas de negocio: recibe el JSON, lo traduce y llama a
-movimientos.py (capa de lógica). Luego convierte el resultado en una respuesta HTTP.
-
-Ejecutar:   python api.py        (queda en http://127.0.0.1:5000)
-"""
 from datetime import datetime
 
 from flask import Flask, g, jsonify, request, send_from_directory
@@ -14,18 +7,18 @@ import db
 from movimientos import (consultar_movimientos, estado_producto, obtener_producto,
                          registrar_entrada, registrar_salida)
 
-# Campos que vienen al nivel principal del JSON (con sus alias en inglés, como tu ejemplo).
+
 ALIAS_PRINCIPALES = {
     "producto": ("product_id", "producto_id"),
     "cantidad": ("quantity", "cantidad"),
     "tipo": ("exit_type", "entry_type", "tipo"),
     "usuario": ("operator_id", "usuario_id"),
 }
-# El servidor asigna estos datos; si el cliente los envía, se ignoran.
+
 IGNORADOS = {"folio", "date_time", "status", "estado", "fecha_hora"}
 CAJAS_DE_DETALLES = ("exit_details", "entry_details", "details", "detalles")
 
-# Traduce los nombres en inglés de tu JSON a los nombres que usa la lógica.
+
 CLAVES = {
     "observation": "observacion", "destination": "destino", "authorization": "autorizacion",
     "reason": "motivo", "supplier": "proveedor", "invoice": "factura",
@@ -75,7 +68,7 @@ def create_app(ruta_bd=None, reloj=datetime.now):
         __name__,
         static_folder=None
     )
-    app.json.ensure_ascii = False          # que los acentos se vean bien
+    app.json.ensure_ascii = False          
     ruta = ruta_bd or db.RUTA_BD
 
     inicial = db.conectar(ruta)
@@ -83,7 +76,7 @@ def create_app(ruta_bd=None, reloj=datetime.now):
     inicial.close()
 
     def con():
-        if "con" not in g:                 # una conexión por petición
+        if "con" not in g:                
             g.con = db.conectar(ruta)
         return g.con
 
