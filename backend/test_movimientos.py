@@ -1,7 +1,4 @@
-"""
-Pruebas automáticas (corresponden a tus PF-01..PF-20 y a los ejemplos de entradas).
-Ejecutar:   python test_movimientos.py
-"""
+
 import unittest
 from datetime import datetime
 
@@ -14,7 +11,6 @@ EMP, ADM = "EMP-023", "ADM-001"
 
 
 def datos_validos(tipo):
-    """Arma datos completos para un tipo, según CAMPOS_REQUERIDOS."""
     especiales = {"fecha_vencimiento": "2027-06-30", "costo_unitario": 48.0, "fecha_corte": "2026-09-30"}
     return {c: especiales.get(c, f"dato-{c}") for c in CAMPOS_REQUERIDOS[tipo]}
 
@@ -43,7 +39,7 @@ class PruebasSalidas(Base):
         self.fijar("PROD-103", 30)
         r = self.salida("PROD-103", 5, "TS-01", datos={"referencia": "VT-100"})
         self.assertTrue(r["aprobado"])
-        self.assertEqual(self.stock("PROD-103"), 25)          # Ejemplo 1: 30 - 5 = 25
+        self.assertEqual(self.stock("PROD-103"), 25)          
         self.assertEqual(r["folio"], "SC-2026-001")
         self.assertEqual(consultar_movimientos(self.con)[0]["tipo_codigo"], "TS-01")
 
@@ -57,20 +53,20 @@ class PruebasSalidas(Base):
         self.assertEqual(len(consultar_movimientos(self.con)), 15)
 
     def test_salida_sin_dato_obligatorio_se_rechaza(self):
-        r = self.salida("PROD-103", 1, "TS-02")                # falta descripción del daño
+        r = self.salida("PROD-103", 1, "TS-02")                
         self.assertFalse(r["aprobado"])
         self.assertEqual(self.stock("PROD-103"), 40)
 
     def test_pf16_producto_inexistente(self):
         r = self.salida("PROD-999", 1, "TS-01", datos={"referencia": "x"})
         self.assertFalse(r["aprobado"])
-        self.assertEqual(consultar_movimientos(self.con), [])  # no inventa historial
+        self.assertEqual(consultar_movimientos(self.con), [])  
 
     def test_pf17_stock_insuficiente(self):
-        r = self.salida("PROD-102", 8, "TS-01", datos={"referencia": "VT-310"})   # Ejemplo 8
+        r = self.salida("PROD-102", 8, "TS-01", datos={"referencia": "VT-310"})  
         self.assertFalse(r["aprobado"])
         self.assertIn("Stock insuficiente", r["errores"][0])
-        self.assertEqual(self.stock("PROD-102"), 5)            # RS-20: sin cambios
+        self.assertEqual(self.stock("PROD-102"), 5)            
         self.assertEqual(consultar_movimientos(self.con)[0]["estado"], "Rechazado")
 
     def test_pf18_cantidad_invalida(self):
@@ -144,7 +140,7 @@ class PruebasEntradas(Base):
         self.assertFalse(r["aprobado"])
         self.assertIn("Factura duplicada", r["errores"][0])
         self.assertEqual(self.stock("PROD-103"), 45)
-        otro = dict(self.COMPRA, proveedor="Otro Proveedor")     # misma factura, otro proveedor: válido
+        otro = dict(self.COMPRA, proveedor="Otro Proveedor")    
         self.assertTrue(self.entrada("PROD-103", 5, "TE-01", datos=otro)["aprobado"])
 
     def test_perecedero_exige_lote_y_vencimiento(self):
@@ -152,7 +148,7 @@ class PruebasEntradas(Base):
         self.assertFalse(self.entrada("PROD-109", 5, "TE-01", datos=datos)["aprobado"])
 
     def test_supera_maximo_advierte_pero_aprueba(self):
-        r = self.entrada("PROD-103", 100, "TE-01", datos=self.COMPRA)   # 140 > máximo 120
+        r = self.entrada("PROD-103", 100, "TE-01", datos=self.COMPRA)   
         self.assertTrue(r["aprobado"])
         self.assertTrue(any("máximo" in a for a in r["advertencias"]))
 
@@ -169,9 +165,9 @@ class PruebasConsultas(Base):
         self.salida("PROD-103", 2, "TS-01", datos={"referencia": "a"})
         self.salida("PROD-101", 3, "TS-14", datos={"referencia": "b"})
         self.entrada("PROD-103", 4, "TE-06", datos={"donante": "ONG"})
-        self.assertEqual(len(consultar_movimientos(self.con, producto_id="PROD-103")), 2)    # RS-16
-        self.assertEqual(len(consultar_movimientos(self.con, tipo="TS-14")), 1)              # RS-17
-        self.assertEqual(len(consultar_movimientos(self.con, desde="2026-09-01", hasta="2026-09-30")), 3)  # RS-18
+        self.assertEqual(len(consultar_movimientos(self.con, producto_id="PROD-103")), 2)    
+        self.assertEqual(len(consultar_movimientos(self.con, tipo="TS-14")), 1)             
+        self.assertEqual(len(consultar_movimientos(self.con, desde="2026-09-01", hasta="2026-09-30")), 3)  
         self.assertEqual(consultar_movimientos(self.con, desde="2026-10-01"), [])
         self.assertEqual(len(consultar_movimientos(self.con, direccion="ENTRADA")), 1)
 
