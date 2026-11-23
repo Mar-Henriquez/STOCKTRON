@@ -1098,15 +1098,384 @@
                 </div>
 
 
-                <div class="panel-card">
+               <div
+    id="dispatchWizard"
+    class="wizard-card"
+>
 
-                    <div class="empty-state large">
-                        El módulo de despachos se incorporará
-                        sobre la estructura de reservas y
-                        salidas del inventario.
-                    </div>
+    <div class="wizard-steps">
+
+        <div
+            class="wizard-step active"
+            data-dispatch-step="1"
+        >
+            <span>1</span>
+            <strong>Factura y cliente</strong>
+        </div>
+
+        <div
+            class="wizard-step"
+            data-dispatch-step="2"
+        >
+            <span>2</span>
+            <strong>Productos y precios</strong>
+        </div>
+
+        <div
+            class="wizard-step"
+            data-dispatch-step="3"
+        >
+            <span>3</span>
+            <strong>Dirección y entrega</strong>
+        </div>
+
+        <div
+            class="wizard-step"
+            data-dispatch-step="4"
+        >
+            <span>4</span>
+            <strong>Confirmar</strong>
+        </div>
+
+    </div>
+
+
+    <form id="dispatchForm">
+
+        <!-- =========================
+             PASO 1
+        ========================== -->
+        <div
+            class="wizard-panel active"
+            data-dispatch-panel="1"
+        >
+
+            <div class="wizard-heading">
+                <h4>Factura y cliente</h4>
+                <p>
+                    Indica el origen del despacho y
+                    los datos del documento y cliente.
+                </p>
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="dispatchOrigin">
+                        Origen del despacho
+                    </label>
+
+                    <select
+                        id="dispatchOrigin"
+                        required
+                    >
+                        <option value="">
+                            Selecciona el origen
+                        </option>
+
+                        <option value="TD-01">
+                            TD-01 · Factura notificada
+                        </option>
+
+                        <option value="TD-02">
+                            TD-02 · Factura recibida
+                        </option>
+
+                        <option value="TD-03">
+                            TD-03 · Despacho manual
+                        </option>
+                    </select>
 
                 </div>
+
+
+                <div class="form-group">
+
+                    <label for="dispatchInvoice">
+                        Número de factura (e-NCF)
+                    </label>
+
+                    <input
+                        type="text"
+                        id="dispatchInvoice"
+                        placeholder="E310000000057"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="dispatchInvoiceType">
+                        Tipo de comprobante
+                    </label>
+
+                    <select
+                        id="dispatchInvoiceType"
+                        required
+                    >
+                        <option value="">
+                            Selecciona el tipo
+                        </option>
+
+                        <option value="31">
+                            31 · Crédito fiscal
+                        </option>
+
+                        <option value="32">
+                            32 · Consumo
+                        </option>
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="dispatchInvoiceDate">
+                        Fecha de la factura
+                    </label>
+
+                    <input
+                        type="date"
+                        id="dispatchInvoiceDate"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="dispatchClient">
+                        Cliente / razón social
+                    </label>
+
+                    <input
+                        type="text"
+                        id="dispatchClient"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="dispatchTaxId">
+                        RNC o cédula
+                    </label>
+
+                    <input
+                        type="text"
+                        id="dispatchTaxId"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="dispatchPhone">
+                        Teléfono del cliente
+                    </label>
+
+                    <input
+                        type="text"
+                        id="dispatchPhone"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="dispatchSupportDocument">
+                        Documento de respaldo
+                    </label>
+
+                    <input
+                        type="text"
+                        id="dispatchSupportDocument"
+                        placeholder="Solo para TD-03"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        Fecha y hora
+                    </label>
+
+                    <input
+                        type="text"
+                        id="dispatchDateTime"
+                        readonly
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Usuario responsable
+                    </label>
+
+                    <input
+                        type="text"
+                        id="dispatchOperator"
+                        value="ADM-001"
+                        readonly
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             PASO 2
+        ========================== -->
+        <div
+            class="wizard-panel"
+            data-dispatch-panel="2"
+        >
+
+            <div class="wizard-heading">
+                <h4>Productos y precios</h4>
+                <p>
+                    Agrega los artículos, cantidades,
+                    precios e ITBIS del despacho.
+                </p>
+            </div>
+
+            <div id="dispatchProductLines"></div>
+
+        </div>
+
+
+        <!-- =========================
+             PASO 3
+        ========================== -->
+        <div
+            class="wizard-panel"
+            data-dispatch-panel="3"
+        >
+
+            <div class="wizard-heading">
+                <h4>Dirección y entrega</h4>
+                <p>
+                    Define cómo y cuándo se entregará
+                    la mercancía.
+                </p>
+            </div>
+
+            <div id="dispatchDeliveryFields"></div>
+
+        </div>
+
+
+        <!-- =========================
+             PASO 4
+        ========================== -->
+        <div
+            class="wizard-panel"
+            data-dispatch-panel="4"
+        >
+
+            <div class="wizard-heading">
+                <h4>Confirmar despacho</h4>
+                <p>
+                    Revisa los datos antes de reservar
+                    las unidades del inventario.
+                </p>
+            </div>
+
+
+            <div
+                id="dispatchReview"
+                class="review-card"
+            ></div>
+
+
+            <div
+                id="dispatchFormErrors"
+                class="form-errors"
+            ></div>
+
+        </div>
+
+
+        <!-- =========================
+             BOTONES
+        ========================== -->
+        <div class="wizard-actions">
+
+            <button
+                type="button"
+                class="secondary-button"
+                id="dispatchPrevious"
+                disabled
+            >
+                Anterior
+            </button>
+
+
+            <div class="wizard-actions-right">
+
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="dispatchCancel"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    class="primary-button"
+                    id="dispatchNext"
+                >
+                    Siguiente
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button hidden"
+                    id="dispatchSubmit"
+                >
+                    Confirmar despacho
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
 
             </section>
 
@@ -1424,3 +1793,4 @@
 
 </body>
 </html>
+
