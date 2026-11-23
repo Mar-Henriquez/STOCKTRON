@@ -91,6 +91,8 @@ PRODUCTOS_DEMO = [
         15,
         100,
         1,
+        85.00,
+        0.18,
     ),
     (
         "PROD-102",
@@ -100,6 +102,8 @@ PRODUCTOS_DEMO = [
         10,
         80,
         0,
+        210.00,
+        0.18,
     ),
     (
         "PROD-103",
@@ -109,6 +113,8 @@ PRODUCTOS_DEMO = [
         12,
         120,
         0,
+        245.00,
+        0.18,
     ),
     (
         "PROD-109",
@@ -118,9 +124,10 @@ PRODUCTOS_DEMO = [
         8,
         60,
         1,
+        110.00,
+        0.18,
     ),
 ]
-
 
 # =========================================================
 # PROVEEDORES DE DEMOSTRACIÓN
@@ -180,6 +187,38 @@ def iniciar_bd(con, con_datos_demo=True):
         con.executescript(archivo.read())
 
     # -----------------------------------------------------
+    # Migración de productos
+    # -----------------------------------------------------
+
+    columnas_productos = {
+        fila["name"]
+        for fila in con.execute(
+            "PRAGMA table_info(productos)"
+        )
+    }
+
+    if "precio_venta" not in columnas_productos:
+        con.execute(
+            """
+            ALTER TABLE productos
+            ADD COLUMN precio_venta REAL
+            NOT NULL DEFAULT 0
+            CHECK (precio_venta >= 0)
+            """
+        )
+
+    if "tasa_itbis" not in columnas_productos:
+        con.execute(
+            """
+            ALTER TABLE productos
+            ADD COLUMN tasa_itbis REAL
+            NOT NULL DEFAULT 0.18
+            CHECK (tasa_itbis IN (0, 0.16, 0.18))
+            """
+        )
+        
+    
+    # -----------------------------------------------------
     # Tipos de movimiento
     # -----------------------------------------------------
 
@@ -234,9 +273,11 @@ def iniciar_bd(con, con_datos_demo=True):
                 stock_actual,
                 stock_minimo,
                 stock_maximo,
-                perecedero
+                perecedero,
+                precio_venta,
+                tasa_itbis
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             PRODUCTOS_DEMO,
         )
