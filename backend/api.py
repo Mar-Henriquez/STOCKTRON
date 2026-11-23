@@ -166,7 +166,7 @@ def create_app(ruta_bd=None, reloj=datetime.now):
             cuerpo.get("marca", "")
         ).strip() or None
 
-              try:
+        try:
             precio_venta = float(
                 cuerpo.get(
                     "precio_venta",
@@ -239,7 +239,7 @@ def create_app(ruta_bd=None, reloj=datetime.now):
                 "El nombre del producto es obligatorio."
             )
 
-              if precio_venta < 0:
+        if precio_venta < 0:
             errores.append(
                 "El precio de venta no puede ser negativo."
             )
@@ -304,9 +304,9 @@ def create_app(ruta_bd=None, reloj=datetime.now):
                 stock_actual,
                 stock_minimo,
                 stock_maximo,
-               perecedero,
-               precio_venta,
-               tasa_itbis
+                perecedero,
+                precio_venta,
+                tasa_itbis
                )
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
