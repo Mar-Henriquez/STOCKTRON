@@ -166,6 +166,28 @@ def create_app(ruta_bd=None, reloj=datetime.now):
             cuerpo.get("marca", "")
         ).strip() or None
 
+              try:
+            precio_venta = float(
+                cuerpo.get(
+                    "precio_venta",
+                    0
+                )
+            )
+
+            tasa_itbis = float(
+                cuerpo.get(
+                    "tasa_itbis",
+                    0.18
+                )
+            )
+
+        except (TypeError, ValueError):
+            return jsonify({
+                "errores": [
+                    "El precio de venta y la tasa de ITBIS deben ser numéricos."
+                ]
+            }), 400
+          
         try:
             stock_actual = int(
                 cuerpo.get("stock_actual", 0)
@@ -217,6 +239,21 @@ def create_app(ruta_bd=None, reloj=datetime.now):
                 "El nombre del producto es obligatorio."
             )
 
+              if precio_venta < 0:
+            errores.append(
+                "El precio de venta no puede ser negativo."
+            )
+
+        if tasa_itbis not in (
+            0,
+            0.16,
+            0.18
+        ):
+            errores.append(
+                "La tasa de ITBIS debe ser 0, 0.16 o 0.18."
+            )
+          
+
         if stock_actual < 0:
             errores.append(
                 "El stock actual no puede ser negativo."
@@ -267,9 +304,11 @@ def create_app(ruta_bd=None, reloj=datetime.now):
                 stock_actual,
                 stock_minimo,
                 stock_maximo,
-                perecedero
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+               perecedero,
+               precio_venta,
+               tasa_itbis
+               )
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 producto_id,
@@ -278,7 +317,9 @@ def create_app(ruta_bd=None, reloj=datetime.now):
                 stock_actual,
                 stock_minimo,
                 stock_maximo,
-                perecedero
+              perecedero,
+              precio_venta,
+              tasa_itbis
             )
         )
 
