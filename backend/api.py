@@ -339,7 +339,7 @@ def create_app(ruta_bd=None, reloj=datetime.now):
             return jsonify({"errores": ["Producto no encontrado en el inventario."]}), 404
         return jsonify(p)
 
-      @app.post("/api/suppliers")
+    @app.post("/api/suppliers")
     def crear_proveedor():
 
         cuerpo = request.get_json(silent=True)
