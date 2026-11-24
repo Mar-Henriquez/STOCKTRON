@@ -339,6 +339,130 @@ def create_app(ruta_bd=None, reloj=datetime.now):
             return jsonify({"errores": ["Producto no encontrado en el inventario."]}), 404
         return jsonify(p)
 
+      @app.post("/api/suppliers")
+    def crear_proveedor():
+
+        cuerpo = request.get_json(silent=True)
+
+        if not isinstance(cuerpo, dict):
+            return jsonify({
+                "errores": [
+                    "El cuerpo de la petición debe ser un JSON."
+                ]
+            }), 400
+
+
+        nombre = str(
+            cuerpo.get("nombre", "")
+        ).strip()
+
+        rnc = str(
+            cuerpo.get("rnc", "")
+        ).strip() or None
+
+        contacto = str(
+            cuerpo.get("contacto", "")
+        ).strip() or None
+
+        telefono = str(
+            cuerpo.get("telefono", "")
+        ).strip() or None
+
+        correo = str(
+            cuerpo.get("correo", "")
+        ).strip() or None
+
+        direccion = str(
+            cuerpo.get("direccion", "")
+        ).strip() or None
+
+        observaciones = str(
+            cuerpo.get("observaciones", "")
+        ).strip() or None
+
+
+        errores = []
+
+        if not nombre:
+            errores.append(
+                "El nombre del proveedor es obligatorio."
+            )
+
+
+        if errores:
+            return jsonify({
+                "errores": errores
+            }), 400
+
+
+        if rnc:
+            existente = con().execute(
+                """
+                SELECT id
+                FROM proveedores
+                WHERE rnc = ?
+                """,
+                (rnc,)
+            ).fetchone()
+
+            if existente:
+                return jsonify({
+                    "errores": [
+                        "Ya existe un proveedor con ese RNC."
+                    ]
+                }), 409
+
+
+        cursor = con().execute(
+            """
+            INSERT INTO proveedores
+            (
+                nombre,
+                rnc,
+                contacto,
+                telefono,
+                correo,
+                direccion,
+                estado,
+                observaciones
+            )
+            VALUES (?, ?, ?, ?, ?, ?, 'Activo', ?)
+            """,
+            (
+                nombre,
+                rnc,
+                contacto,
+                telefono,
+                correo,
+                direccion,
+                observaciones
+            )
+        )
+
+
+        proveedor = con().execute(
+            """
+            SELECT
+                id,
+                nombre,
+                rnc,
+                contacto,
+                telefono,
+                correo,
+                direccion,
+                estado,
+                observaciones
+            FROM proveedores
+            WHERE id = ?
+            """,
+            (cursor.lastrowid,)
+        ).fetchone()
+
+
+        return jsonify(
+            dict(proveedor)
+        ), 201
+
 
 
     @app.get("/api/suppliers")
