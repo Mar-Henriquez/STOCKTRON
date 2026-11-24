@@ -2706,16 +2706,15 @@ function renderizarCamposSalida() {
 
                 <div class="form-group">
 
-                    <label for="exitReference">
-                        Referencia de venta
-                    </label>
-
-                    <input
-                        type="text"
-                        id="exitReference"
-                        placeholder="Ej. VT-2026-205"
-                        required
-                    >
+                  <label for="exitReference">
+                  Número de factura
+                  </label>
+                  <input
+                  type="text"
+                  id="exitReference"
+                  placeholder="Ej. E310000000057"
+                  required
+                  >
 
                 </div>
 
