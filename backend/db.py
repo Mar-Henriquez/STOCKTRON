@@ -197,7 +197,7 @@ def iniciar_bd(con, con_datos_demo=True):
         )
     }
 
-        if "precio_venta" not in columnas_productos:
+    if "precio_venta" not in columnas_productos:
         con.execute(
             """
             ALTER TABLE productos
