@@ -541,6 +541,164 @@ function renderizarProveedores(
         return;
     }
 
+    document
+    .getElementById(
+        "suppliersTableBody"
+    )
+    .addEventListener(
+        "click",
+        async event => {
+
+            const botonEstado =
+                event.target.closest(
+                    ".supplier-toggle"
+                );
+
+            const botonEliminar =
+                event.target.closest(
+                    ".supplier-delete"
+                );
+
+
+            if (botonEstado) {
+
+                const id =
+                    botonEstado.dataset.id;
+
+                const proveedor =
+                    suppliersList.find(
+                        item =>
+                            String(item.id) ===
+                            String(id)
+                    );
+
+
+                if (!proveedor) {
+                    return;
+                }
+
+
+                const nuevoEstado =
+                    proveedor.estado ===
+                    "Activo"
+                        ? "Inactivo"
+                        : "Activo";
+
+
+                try {
+
+                    const respuesta =
+                        await fetch(
+                            `/api/suppliers/${id}/status`,
+                            {
+                                method: "PATCH",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        estado:
+                                            nuevoEstado
+                                    })
+                            }
+                        );
+
+
+                    const resultado =
+                        await respuesta.json();
+
+
+                    if (!respuesta.ok) {
+                        throw new Error(
+                            resultado.errores?.[0] ||
+                            "No se pudo cambiar el estado."
+                        );
+                    }
+
+
+                    mostrarToast(
+                        `Proveedor ${nuevoEstado.toLowerCase()}.`
+                    );
+
+
+                    await cargarProveedores();
+                    await cargarProveedoresEntradas();
+
+                } catch (error) {
+
+                    mostrarToast(
+                        error.message
+                    );
+                }
+
+
+                return;
+            }
+
+
+            if (botonEliminar) {
+
+                const id =
+                    botonEliminar.dataset.id;
+
+
+                const confirmar =
+                    window.confirm(
+                        "¿Deseas eliminar este proveedor?"
+                    );
+
+
+                if (!confirmar) {
+                    return;
+                }
+
+
+                try {
+
+                    const respuesta =
+                        await fetch(
+                            `/api/suppliers/${id}`,
+                            {
+                                method: "DELETE"
+                            }
+                        );
+
+
+                    const resultado =
+                        await respuesta.json();
+
+
+                    if (!respuesta.ok) {
+                        throw new Error(
+                            resultado.errores?.[0] ||
+                            "No se pudo eliminar el proveedor."
+                        );
+                    }
+
+
+                    mostrarToast(
+                        "Proveedor eliminado correctamente."
+                    );
+
+
+                    await cargarProveedores();
+                    await cargarProveedoresEntradas();
+
+                } catch (error) {
+
+                    mostrarToast(
+                        error.message
+                    );
+                }
+            }
+
+        }
+    );
+    
+
 
     tabla.innerHTML =
         proveedores
@@ -814,8 +972,10 @@ supplierForm.addEventListener(
         try {
 
             const respuesta =
-                await fetch(
-                    "/api/suppliers",
+                fetch(
+                    "/api/suppliers?include_inactive=1"
+                
+                )
                     {
                         method: "POST",
 
