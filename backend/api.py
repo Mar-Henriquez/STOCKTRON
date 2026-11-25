@@ -136,7 +136,7 @@ def create_app(ruta_bd=None, reloj=datetime.now):
             con(), producto_id=a.get("producto"), tipo=a.get("tipo"), desde=a.get("desde"),
             hasta=a.get("hasta"), direccion=a.get("direccion"), estado=a.get("estado")))
 
-       @app.post("/api/products")
+    @app.post("/api/products")
     def crear_producto():
         cuerpo = request.get_json(silent=True)
 
