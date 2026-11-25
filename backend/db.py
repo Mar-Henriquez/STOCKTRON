@@ -197,13 +197,11 @@ def iniciar_bd(con, con_datos_demo=True):
         )
     }
 
-    if "precio_venta" not in columnas_productos:
+        if "precio_venta" not in columnas_productos:
         con.execute(
             """
             ALTER TABLE productos
-            ADD COLUMN precio_venta REAL
-            NOT NULL DEFAULT 0
-            CHECK (precio_venta >= 0)
+            ADD COLUMN precio_venta REAL DEFAULT 0
             """
         )
 
@@ -211,12 +209,25 @@ def iniciar_bd(con, con_datos_demo=True):
         con.execute(
             """
             ALTER TABLE productos
-            ADD COLUMN tasa_itbis REAL
-            NOT NULL DEFAULT 0.18
-            CHECK (tasa_itbis IN (0, 0.16, 0.18))
+            ADD COLUMN tasa_itbis REAL DEFAULT 0.18
             """
         )
-        
+
+    con.execute(
+        """
+        UPDATE productos
+        SET precio_venta = 0
+        WHERE precio_venta IS NULL
+        """
+    )
+
+    con.execute(
+        """
+        UPDATE productos
+        SET tasa_itbis = 0.18
+        WHERE tasa_itbis IS NULL
+        """
+    )
     
     # -----------------------------------------------------
     # Tipos de movimiento
