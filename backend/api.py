@@ -136,7 +136,7 @@ def create_app(ruta_bd=None, reloj=datetime.now):
             con(), producto_id=a.get("producto"), tipo=a.get("tipo"), desde=a.get("desde"),
             hasta=a.get("hasta"), direccion=a.get("direccion"), estado=a.get("estado")))
 
-    @app.post("/api/products")
+       @app.post("/api/products")
     def crear_producto():
         cuerpo = request.get_json(silent=True)
 
@@ -148,28 +148,27 @@ def create_app(ruta_bd=None, reloj=datetime.now):
             }), 400
 
         ultimo_codigo = con().execute(
-    """
-    SELECT MAX(
-        CAST(
-            SUBSTR(id, 6) AS INTEGER
+            """
+            SELECT MAX(
+                CAST(
+                    SUBSTR(id, 6) AS INTEGER
+                )
+            ) AS ultimo
+            FROM productos
+            WHERE id GLOB 'PROD-[0-9]*'
+            """
+        ).fetchone()
+
+        ultimo_numero = (
+            ultimo_codigo["ultimo"]
+            if ultimo_codigo
+            and ultimo_codigo["ultimo"] is not None
+            else 0
         )
-    ) AS ultimo
-    FROM productos
-    WHERE id GLOB 'PROD-[0-9]*'
-    """
-).fetchone()
 
-ultimo_numero = (
-    ultimo_codigo["ultimo"]
-    if ultimo_codigo
-    and ultimo_codigo["ultimo"] is not None
-    else 0
-)
-
-producto_id = (
-    f"PROD-{ultimo_numero + 1:03d}"
-)
-
+        producto_id = (
+            f"PROD-{ultimo_numero + 1:03d}"
+        )
 
         nombre = str(
             cuerpo.get("nombre", "")
@@ -200,7 +199,7 @@ producto_id = (
                     "El precio de venta y la tasa de ITBIS deben ser numéricos."
                 ]
             }), 400
-          
+
         try:
             stock_actual = int(
                 cuerpo.get("stock_actual", 0)
@@ -227,12 +226,26 @@ producto_id = (
                 ]
             }), 400
 
-        perecedero = cuerpo.get("perecedero", False)
+        perecedero = cuerpo.get(
+            "perecedero",
+            False
+        )
 
-        if isinstance(perecedero, bool):
-            perecedero = 1 if perecedero else 0
+        if isinstance(
+            perecedero,
+            bool
+        ):
+            perecedero = (
+                1
+                if perecedero
+                else 0
+            )
+
         elif perecedero in (0, 1):
-            perecedero = int(perecedero)
+            perecedero = int(
+                perecedero
+            )
+
         else:
             return jsonify({
                 "errores": [
@@ -241,7 +254,6 @@ producto_id = (
             }), 400
 
         errores = []
-
 
         if not nombre:
             errores.append(
@@ -261,7 +273,6 @@ producto_id = (
             errores.append(
                 "La tasa de ITBIS debe ser 0, 0.16 o 0.18."
             )
-          
 
         if stock_actual < 0:
             errores.append(
@@ -316,8 +327,8 @@ producto_id = (
                 perecedero,
                 precio_venta,
                 tasa_itbis
-               )
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 producto_id,
@@ -326,9 +337,9 @@ producto_id = (
                 stock_actual,
                 stock_minimo,
                 stock_maximo,
-              perecedero,
-              precio_venta,
-              tasa_itbis
+                perecedero,
+                precio_venta,
+                tasa_itbis
             )
         )
 
@@ -338,6 +349,7 @@ producto_id = (
         )
 
         return jsonify(producto), 201
+      
 
     @app.get("/api/products")
     def productos():
