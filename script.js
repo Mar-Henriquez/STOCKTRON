@@ -483,7 +483,7 @@ async function cargarProveedores() {
     try {
 
         const respuesta =
-            fetch(
+            await fetch(
                 "/api/suppliers?include_inactive=1"
             );
 
@@ -493,10 +493,8 @@ async function cargarProveedores() {
             );
         }
 
-
         suppliersList =
             await respuesta.json();
-
 
         renderizarProveedores(
             suppliersList
@@ -542,6 +540,102 @@ function renderizarProveedores(
     }
 
 
+    tabla.innerHTML =
+        proveedores
+            .map(
+                proveedor => `
+
+                    <tr>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.nombre || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.rnc || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.contacto || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.telefono || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.correo || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.estado || "—"
+                            )}
+                        </td>
+
+                        <td>
+
+                            <button
+                                type="button"
+                                class="secondary-button supplier-edit"
+                                data-id="${proveedor.id}"
+                            >
+                                Editar
+                            </button>
+
+                            <button
+                                type="button"
+                                class="secondary-button supplier-toggle"
+                                data-id="${proveedor.id}"
+                            >
+                                ${
+                                    proveedor.estado ===
+                                    "Activo"
+                                        ? "Desactivar"
+                                        : "Activar"
+                                }
+                            </button>
+
+                            <button
+                                type="button"
+                                class="secondary-button supplier-delete"
+                                data-id="${proveedor.id}"
+                            >
+                                Eliminar
+                            </button>
+
+                        </td>
+
+                    </tr>
+                `
+            )
+            .join("");
+}
+
+
+document
+    .getElementById(
+        "suppliersTableBody"
+    )
+    .addEventListener(
+        "click",
+        async event => {
+
+            const botonEstado =
+                event.target.closest(
+                    ".supplier-toggle"
+                );
+
             const botonEliminar =
                 event.target.closest(
                     ".supplier-delete"
@@ -567,8 +661,7 @@ function renderizarProveedores(
 
 
                 const nuevoEstado =
-                    proveedor.estado ===
-                    "Activo"
+                    proveedor.estado === "Activo"
                         ? "Inactivo"
                         : "Activo";
 
@@ -685,119 +778,7 @@ function renderizarProveedores(
 
         }
     );
-    
 
-
-    tabla.innerHTML =
-        proveedores
-            .map(
-                proveedor => `
-
-                    <tr>
-
-                        <td>
-                            ${escapeHtml(
-                                proveedor.nombre || "—"
-                            )}
-                        </td>
-
-                        <td>
-                            ${escapeHtml(
-                                proveedor.rnc || "—"
-                            )}
-                        </td>
-
-                        <td>
-                            ${escapeHtml(
-                                proveedor.contacto || "—"
-                            )}
-                        </td>
-
-                        <td>
-                            ${escapeHtml(
-                                proveedor.telefono || "—"
-                            )}
-                        </td>
-
-                        <td>
-                            ${escapeHtml(
-                                proveedor.correo || "—"
-                            )}
-                        </td>
-
-                        <td>
-                            ${escapeHtml(
-                                proveedor.estado || "—"
-                            )}
-                        </td>
-
-                        <td>
-
-                            <button
-                                type="button"
-                                class="secondary-button supplier-edit"
-                                data-id="${proveedor.id}"
-                            >
-                                Editar
-                            </button>
-
-                            <button
-                                type="button"
-                                class="secondary-button supplier-toggle"
-                                data-id="${proveedor.id}"
-                            >
-                                ${
-                                    proveedor.estado ===
-                                    "Activo"
-                                        ? "Desactivar"
-                                        : "Activar"
-                                }
-                            </button>
-
-                            <button
-                                type="button"
-                                class="secondary-button supplier-delete"
-                                data-id="${proveedor.id}"
-                            >
-                                Eliminar
-                            </button>
-
-                        </td>
-
-                    </tr>
-                `
-            )
-            .join("");
-
-function renderizarProveedores(
-    proveedores
-) {
-
-    ...
-
-    tabla.innerHTML =
-        proveedores
-            .map(...)
-            .join("");
-}
-
-
-/* AQUÍ va el listener de suppliersTableBody */
-document
-    .getElementById(
-        "suppliersTableBody"
-    )
-    .addEventListener(
-        ...
-    );
-
-
-/* DESPUÉS viene el buscador */
-document
-    .getElementById(
-        "supplierSearch"
-    )
-}
 
 document
     .getElementById(
@@ -853,16 +834,6 @@ document
     );
 
 
-document
-    .getElementById(
-        "btnNuevoProveedor"
-    )
-    .addEventListener(
-        "click",
-        abrirModalProveedor
-    );
-
-
 const supplierModal =
     document.getElementById("supplierModal");
 
@@ -905,6 +876,16 @@ function cerrarModalProveedor() {
 
     supplierFormErrors.innerHTML = "";
 }
+
+
+document
+    .getElementById(
+        "btnNuevoProveedor"
+    )
+    .addEventListener(
+        "click",
+        abrirModalProveedor
+    );
 
 
 document
@@ -989,10 +970,8 @@ supplierForm.addEventListener(
         try {
 
             const respuesta =
-                fetch(
-                    "/api/suppliers?include_inactive=1"
-                
-                )
+                await fetch(
+                    "/api/suppliers",
                     {
                         method: "POST",
 
@@ -1040,7 +1019,7 @@ supplierForm.addEventListener(
 
             cerrarModalProveedor();
 
-
+            await cargarProveedores();
             await cargarProveedoresEntradas();
 
         } catch (error) {
@@ -1050,7 +1029,6 @@ supplierForm.addEventListener(
         }
     }
 );
-
 
 const productModal =
     document.getElementById("productModal");
