@@ -483,8 +483,8 @@ async function cargarProveedores() {
     try {
 
         const respuesta =
-            await fetch(
-                "/api/suppliers"
+            fetch(
+                "/api/suppliers?include_inactive=1"
             );
 
         if (!respuesta.ok) {
@@ -541,18 +541,6 @@ function renderizarProveedores(
         return;
     }
 
-    document
-    .getElementById(
-        "suppliersTableBody"
-    )
-    .addEventListener(
-        "click",
-        async event => {
-
-            const botonEstado =
-                event.target.closest(
-                    ".supplier-toggle"
-                );
 
             const botonEliminar =
                 event.target.closest(
@@ -780,6 +768,35 @@ function renderizarProveedores(
                 `
             )
             .join("");
+
+function renderizarProveedores(
+    proveedores
+) {
+
+    ...
+
+    tabla.innerHTML =
+        proveedores
+            .map(...)
+            .join("");
+}
+
+
+/* AQUÍ va el listener de suppliersTableBody */
+document
+    .getElementById(
+        "suppliersTableBody"
+    )
+    .addEventListener(
+        ...
+    );
+
+
+/* DESPUÉS viene el buscador */
+document
+    .getElementById(
+        "supplierSearch"
+    )
 }
 
 document
