@@ -147,9 +147,29 @@ def create_app(ruta_bd=None, reloj=datetime.now):
                 ]
             }), 400
 
-        producto_id = str(
-            cuerpo.get("id", "")
-        ).strip()
+        ultimo_codigo = con().execute(
+    """
+    SELECT MAX(
+        CAST(
+            SUBSTR(id, 6) AS INTEGER
+        )
+    ) AS ultimo
+    FROM productos
+    WHERE id GLOB 'PROD-[0-9]*'
+    """
+).fetchone()
+
+ultimo_numero = (
+    ultimo_codigo["ultimo"]
+    if ultimo_codigo
+    and ultimo_codigo["ultimo"] is not None
+    else 0
+)
+
+producto_id = (
+    f"PROD-{ultimo_numero + 1:03d}"
+)
+
 
         nombre = str(
             cuerpo.get("nombre", "")
@@ -222,10 +242,6 @@ def create_app(ruta_bd=None, reloj=datetime.now):
 
         errores = []
 
-        if not producto_id:
-            errores.append(
-                "El código del producto es obligatorio."
-            )
 
         if not nombre:
             errores.append(
