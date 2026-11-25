@@ -1783,6 +1783,174 @@
 
         </div>
     </div>
+
+
+        <div
+        id="supplierModal"
+        class="modal-backdrop"
+        aria-hidden="true"
+    >
+        <div class="modal-card">
+
+            <div class="modal-header">
+
+                <div>
+                    <h3>Nuevo proveedor</h3>
+                    <p>
+                        Registra un proveedor para utilizarlo
+                        en las entradas y devoluciones.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="btnCerrarProveedor"
+                    aria-label="Cerrar"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <form id="supplierForm">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label for="supplierName">
+                            Nombre del proveedor *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="supplierName"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="supplierRnc">
+                            RNC
+                        </label>
+
+                        <input
+                            type="text"
+                            id="supplierRnc"
+                            placeholder="Ej. 131000001"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="supplierContact">
+                            Persona de contacto
+                        </label>
+
+                        <input
+                            type="text"
+                            id="supplierContact"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="supplierPhone">
+                            Teléfono
+                        </label>
+
+                        <input
+                            type="text"
+                            id="supplierPhone"
+                            placeholder="809-555-0000"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="supplierEmail">
+                            Correo electrónico
+                        </label>
+
+                        <input
+                            type="email"
+                            id="supplierEmail"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="supplierAddress">
+                            Dirección
+                        </label>
+
+                        <input
+                            type="text"
+                            id="supplierAddress"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="supplierNotes">
+                        Observaciones
+                    </label>
+
+                    <textarea
+                        id="supplierNotes"
+                        rows="3"
+                        placeholder="Información adicional del proveedor"
+                    ></textarea>
+
+                </div>
+
+
+                <div
+                    id="supplierFormErrors"
+                    class="form-errors"
+                ></div>
+
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="btnCancelarProveedor"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Guardar proveedor
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
     
     <div
         id="toast"
