@@ -465,9 +465,114 @@ def create_app(ruta_bd=None, reloj=datetime.now):
 
 
 
-    @app.get("/api/suppliers")
+        @app.get("/api/suppliers")
     def proveedores():
+
+        incluir_inactivos = (
+            request.args.get(
+                "include_inactive",
+                ""
+            ) == "1"
+        )
+
+        sql = """
+            SELECT
+                id,
+                nombre,
+                rnc,
+                contacto,
+                telefono,
+                correo,
+                direccion,
+                estado,
+                observaciones
+            FROM proveedores
+        """
+
+        if not incluir_inactivos:
+            sql += """
+                WHERE estado = 'Activo'
+            """
+
+        sql += """
+            ORDER BY nombre
+        """
+
         filas = con().execute(
+            sql
+        ).fetchall()
+
+        return jsonify([
+            dict(fila)
+            for fila in filas
+        ])
+
+
+    @app.patch("/api/suppliers/<int:proveedor_id>/status")
+    def cambiar_estado_proveedor(
+        proveedor_id
+    ):
+
+        cuerpo = request.get_json(
+            silent=True
+        )
+
+        if not isinstance(cuerpo, dict):
+            return jsonify({
+                "errores": [
+                    "El cuerpo de la petición debe ser un JSON."
+                ]
+            }), 400
+
+
+        estado = str(
+            cuerpo.get("estado", "")
+        ).strip()
+
+
+        if estado not in (
+            "Activo",
+            "Inactivo"
+        ):
+            return jsonify({
+                "errores": [
+                    "El estado debe ser Activo o Inactivo."
+                ]
+            }), 400
+
+
+        existente = con().execute(
+            """
+            SELECT id
+            FROM proveedores
+            WHERE id = ?
+            """,
+            (proveedor_id,)
+        ).fetchone()
+
+
+        if not existente:
+            return jsonify({
+                "errores": [
+                    "Proveedor no encontrado."
+                ]
+            }), 404
+
+
+        con().execute(
+            """
+            UPDATE proveedores
+            SET estado = ?
+            WHERE id = ?
+            """,
+            (
+                estado,
+                proveedor_id
+            )
+        )
+
+
+        proveedor = con().execute(
             """
             SELECT
                 id,
@@ -476,17 +581,76 @@ def create_app(ruta_bd=None, reloj=datetime.now):
                 contacto,
                 telefono,
                 correo,
-                estado
+                direccion,
+                estado,
+                observaciones
             FROM proveedores
-            WHERE estado = 'Activo'
-            ORDER BY nombre
-            """
-        ).fetchall()
+            WHERE id = ?
+            """,
+            (proveedor_id,)
+        ).fetchone()
 
-        return jsonify([
-            dict(fila)
-            for fila in filas
-        ])
+
+        return jsonify(
+            dict(proveedor)
+        )
+
+
+    @app.delete("/api/suppliers/<int:proveedor_id>")
+    def eliminar_proveedor(
+        proveedor_id
+    ):
+
+        proveedor = con().execute(
+            """
+            SELECT id, nombre
+            FROM proveedores
+            WHERE id = ?
+            """,
+            (proveedor_id,)
+        ).fetchone()
+
+
+        if not proveedor:
+            return jsonify({
+                "errores": [
+                    "Proveedor no encontrado."
+                ]
+            }), 404
+
+
+        movimientos = con().execute(
+            """
+            SELECT COUNT(*) AS total
+            FROM detalle_movimiento
+            WHERE proveedor_id = ?
+            """,
+            (proveedor_id,)
+        ).fetchone()
+
+
+        if movimientos["total"] > 0:
+
+            return jsonify({
+                "errores": [
+                    "No se puede eliminar este proveedor porque ya tiene movimientos registrados. Desactívalo en su lugar."
+                ]
+            }), 409
+
+
+        con().execute(
+            """
+            DELETE FROM proveedores
+            WHERE id = ?
+            """,
+            (proveedor_id,)
+        )
+
+
+        return jsonify({
+            "mensaje":
+                "Proveedor eliminado correctamente."
+        })
       
     @app.get("/api/types")
     def tipos():
