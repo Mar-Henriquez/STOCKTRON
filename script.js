@@ -1306,54 +1306,29 @@ async function cargarDatosEntradas() {
             await respuestaTipos.json();
 
 
-        const productSelect =
-            document.getElementById(
-                "entryProduct"
-            );
+       exitProducts.forEach(producto => {
 
-        productSelect.innerHTML = `
-            <option value="">
-                Selecciona un producto
-            </option>
-        `;
+    const opcion =
+        document.createElement(
+            "option"
+        );
 
-        function llenarProductosEntrada(
-    productos
-) {
+    opcion.value =
+        producto.id;
 
-    productSelect.innerHTML = `
-        <option value="">
-            Selecciona un producto
-        </option>
-    `;
+    opcion.textContent =
+        `${producto.id} · ${producto.nombre}` +
+        `${producto.marca
+            ? " · " + producto.marca
+            : ""
+        }`;
 
-    productos.forEach(
-        producto => {
-
-            const opcion =
-                document.createElement(
-                    "option"
-                );
-
-            opcion.value =
-                producto.id;
-
-            opcion.textContent =
-                `${producto.id} · ${producto.nombre}` +
-                `${
-                    producto.marca
-                        ? " · " + producto.marca
-                        : ""
-                }`;
-
-            productSelect.appendChild(
-                opcion
-            );
-        }
+    productSelect.appendChild(
+        opcion
     );
-}
+});
 
-
+        
 llenarProductosEntrada(
     entryProducts
 );
@@ -3133,7 +3108,18 @@ async function cargarDatosSalidas() {
             </option>`;
 
 
-        exitProducts.forEach(producto => {
+       function llenarProductosSalida(
+    productos
+) {
+
+    productSelect.innerHTML = `
+        <option value="">
+            Selecciona un producto
+        </option>
+    `;
+
+    productos.forEach(
+        producto => {
 
             const opcion =
                 document.createElement(
@@ -3145,15 +3131,23 @@ async function cargarDatosSalidas() {
 
             opcion.textContent =
                 `${producto.id} · ${producto.nombre}` +
-                `${producto.marca
-                    ? " · " + producto.marca
-                    : ""
+                `${
+                    producto.marca
+                        ? " · " + producto.marca
+                        : ""
                 }`;
 
             productSelect.appendChild(
                 opcion
             );
-        });
+        }
+    );
+}
+
+
+llenarProductosSalida(
+    exitProducts
+);
 
 
         typeSelect.innerHTML =
@@ -3188,6 +3182,90 @@ async function cargarDatosSalidas() {
     }
 }
 
+document
+    .getElementById(
+        "exitProductSearch"
+    )
+    .addEventListener(
+        "input",
+        event => {
+
+            const termino =
+                event.target.value
+                    .trim()
+                    .toLowerCase();
+
+            const productSelect =
+                document.getElementById(
+                    "exitProduct"
+                );
+
+            const filtrados =
+                exitProducts.filter(
+                    producto => {
+
+                        const texto = [
+                            producto.id,
+                            producto.nombre,
+                            producto.marca
+                        ]
+                            .filter(Boolean)
+                            .join(" ")
+                            .toLowerCase();
+
+                        return texto.includes(
+                            termino
+                        );
+                    }
+                );
+
+            const valorActual =
+                productSelect.value;
+
+            productSelect.innerHTML = `
+                <option value="">
+                    Selecciona un producto
+                </option>
+            `;
+
+            filtrados.forEach(
+                producto => {
+
+                    const opcion =
+                        document.createElement(
+                            "option"
+                        );
+
+                    opcion.value =
+                        producto.id;
+
+                    opcion.textContent =
+                        `${producto.id} · ${producto.nombre}` +
+                        `${
+                            producto.marca
+                                ? " · " + producto.marca
+                                : ""
+                        }`;
+
+                    productSelect.appendChild(
+                        opcion
+                    );
+                }
+            );
+
+            const sigueDisponible =
+                filtrados.some(
+                    producto =>
+                        producto.id ===
+                        valorActual
+                );
+
+            if (sigueDisponible) {
+                productSelect.value =
+                    valorActual;
+            }
+        }
+    );
 
 function actualizarPasoSalida() {
 
