@@ -465,7 +465,7 @@ def create_app(ruta_bd=None, reloj=datetime.now):
 
 
 
-        @app.get("/api/suppliers")
+    @app.get("/api/suppliers")
     def proveedores():
 
         incluir_inactivos = (
