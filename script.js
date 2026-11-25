@@ -1306,34 +1306,41 @@ async function cargarDatosEntradas() {
             await respuestaTipos.json();
 
 
-       exitProducts.forEach(producto => {
+               const productSelect =
+            document.getElementById(
+                "entryProduct"
+            );
 
-    const opcion =
-        document.createElement(
-            "option"
+        productSelect.innerHTML = `
+            <option value="">
+                Selecciona un producto
+            </option>
+        `;
+
+        entryProducts.forEach(
+            producto => {
+
+                const opcion =
+                    document.createElement(
+                        "option"
+                    );
+
+                opcion.value =
+                    producto.id;
+
+                opcion.textContent =
+                    `${producto.id} · ${producto.nombre}` +
+                    `${
+                        producto.marca
+                            ? " · " + producto.marca
+                            : ""
+                    }`;
+
+                productSelect.appendChild(
+                    opcion
+                );
+            }
         );
-
-    opcion.value =
-        producto.id;
-
-    opcion.textContent =
-        `${producto.id} · ${producto.nombre}` +
-        `${producto.marca
-            ? " · " + producto.marca
-            : ""
-        }`;
-
-    productSelect.appendChild(
-        opcion
-    );
-});
-
-        
-llenarProductosEntrada(
-    entryProducts
-);
-
-
         const typeSelect =
             document.getElementById(
                 "entryType"
