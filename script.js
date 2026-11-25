@@ -1317,18 +1317,46 @@ async function cargarDatosEntradas() {
             </option>
         `;
 
-        entryProducts.forEach(producto => {
+        function llenarProductosEntrada(
+    productos
+) {
+
+    productSelect.innerHTML = `
+        <option value="">
+            Selecciona un producto
+        </option>
+    `;
+
+    productos.forEach(
+        producto => {
 
             const opcion =
-                document.createElement("option");
+                document.createElement(
+                    "option"
+                );
 
-            opcion.value = producto.id;
+            opcion.value =
+                producto.id;
 
             opcion.textContent =
-                `${producto.id} · ${producto.nombre}`;
+                `${producto.id} · ${producto.nombre}` +
+                `${
+                    producto.marca
+                        ? " · " + producto.marca
+                        : ""
+                }`;
 
-            productSelect.appendChild(opcion);
-        });
+            productSelect.appendChild(
+                opcion
+            );
+        }
+    );
+}
+
+
+llenarProductosEntrada(
+    entryProducts
+);
 
 
         const typeSelect =
@@ -1360,6 +1388,99 @@ async function cargarDatosEntradas() {
         mostrarToast(error.message);
     }
 }
+
+document
+    .getElementById(
+        "entryProductSearch"
+    )
+    .addEventListener(
+        "input",
+        event => {
+
+            const termino =
+                event.target.value
+                    .trim()
+                    .toLowerCase();
+
+
+            const productSelect =
+                document.getElementById(
+                    "entryProduct"
+                );
+
+
+            const filtrados =
+                entryProducts.filter(
+                    producto => {
+
+                        const texto = [
+                            producto.id,
+                            producto.nombre,
+                            producto.marca
+                        ]
+                            .filter(Boolean)
+                            .join(" ")
+                            .toLowerCase();
+
+
+                        return texto.includes(
+                            termino
+                        );
+                    }
+                );
+
+
+            const valorActual =
+                productSelect.value;
+
+
+            productSelect.innerHTML = `
+                <option value="">
+                    Selecciona un producto
+                </option>
+            `;
+
+
+            filtrados.forEach(
+                producto => {
+
+                    const opcion =
+                        document.createElement(
+                            "option"
+                        );
+
+                    opcion.value =
+                        producto.id;
+
+                    opcion.textContent =
+                        `${producto.id} · ${producto.nombre}` +
+                        `${
+                            producto.marca
+                                ? " · " + producto.marca
+                                : ""
+                        }`;
+
+                    productSelect.appendChild(
+                        opcion
+                    );
+                }
+            );
+
+
+            const sigueDisponible =
+                filtrados.some(
+                    producto =>
+                        producto.id ===
+                        valorActual
+                );
+
+
+            if (sigueDisponible) {
+                productSelect.value =
+                    valorActual;
+            }
+        }
+    );
 
 
 function actualizarPasoEntrada() {
