@@ -466,6 +466,197 @@ async function cargarMovimientos() {
    BOTONES TODAVÍA NO IMPLEMENTADOS
 ========================================================= */
 
+/* =========================================================
+   PROVEEDORES
+========================================================= */
+
+const supplierModal =
+    document.getElementById("supplierModal");
+
+const supplierForm =
+    document.getElementById("supplierForm");
+
+const supplierFormErrors =
+    document.getElementById(
+        "supplierFormErrors"
+    );
+
+
+function abrirModalProveedor() {
+
+    supplierForm.reset();
+
+    supplierFormErrors.innerHTML = "";
+
+    supplierModal.classList.add("show");
+
+    supplierModal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    document.getElementById(
+        "supplierName"
+    ).focus();
+}
+
+
+function cerrarModalProveedor() {
+
+    supplierModal.classList.remove("show");
+
+    supplierModal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    supplierFormErrors.innerHTML = "";
+}
+
+
+document
+    .getElementById(
+        "btnCerrarProveedor"
+    )
+    .addEventListener(
+        "click",
+        cerrarModalProveedor
+    );
+
+
+document
+    .getElementById(
+        "btnCancelarProveedor"
+    )
+    .addEventListener(
+        "click",
+        cerrarModalProveedor
+    );
+
+
+supplierModal.addEventListener(
+    "click",
+    event => {
+
+        if (event.target === supplierModal) {
+            cerrarModalProveedor();
+        }
+    }
+);
+
+
+supplierForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        supplierFormErrors.innerHTML = "";
+
+
+        const cuerpo = {
+
+            nombre:
+                document.getElementById(
+                    "supplierName"
+                ).value.trim(),
+
+            rnc:
+                document.getElementById(
+                    "supplierRnc"
+                ).value.trim(),
+
+            contacto:
+                document.getElementById(
+                    "supplierContact"
+                ).value.trim(),
+
+            telefono:
+                document.getElementById(
+                    "supplierPhone"
+                ).value.trim(),
+
+            correo:
+                document.getElementById(
+                    "supplierEmail"
+                ).value.trim(),
+
+            direccion:
+                document.getElementById(
+                    "supplierAddress"
+                ).value.trim(),
+
+            observaciones:
+                document.getElementById(
+                    "supplierNotes"
+                ).value.trim()
+        };
+
+
+        try {
+
+            const respuesta =
+                await fetch(
+                    "/api/suppliers",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(
+                                cuerpo
+                            )
+                    }
+                );
+
+
+            const resultado =
+                await respuesta.json();
+
+
+            if (!respuesta.ok) {
+
+                const errores =
+                    resultado.errores ||
+                    [
+                        "No se pudo registrar el proveedor."
+                    ];
+
+                supplierFormErrors.innerHTML =
+                    errores
+                        .map(
+                            error =>
+                                `<div>${escapeHtml(error)}</div>`
+                        )
+                        .join("");
+
+                return;
+            }
+
+
+            mostrarToast(
+                "Proveedor registrado correctamente."
+            );
+
+
+            cerrarModalProveedor();
+
+
+            await cargarProveedoresEntradas();
+
+        } catch (error) {
+
+            supplierFormErrors.innerHTML =
+                `<div>${escapeHtml(error.message)}</div>`;
+        }
+    }
+);
+
+
 const productModal =
     document.getElementById("productModal");
 
