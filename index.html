@@ -47,6 +47,15 @@
 
                 <button
                     class="nav-item"
+                    data-section="proveedores"
+                >
+                    <span class="nav-icon">♢</span>
+                    Proveedores
+                
+                </button>
+
+                <button
+                    class="nav-item"
                     data-section="entradas"
                 >
                     <span class="nav-icon">↓</span>
@@ -1479,7 +1488,83 @@
 
             </section>
 
+<!-- =========================
+     PROVEEDORES
+========================== -->
+<section
+    id="proveedores"
+    class="content-section"
+>
 
+    <div class="section-toolbar">
+
+        <div>
+            <h3>Proveedores</h3>
+            <p>
+                Registro y administración de proveedores
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="primary-button"
+            id="btnNuevoProveedor"
+        >
+            + Nuevo proveedor
+        </button>
+
+    </div>
+
+    <div class="panel-card">
+
+        <div class="form-group">
+
+            <label for="supplierSearch">
+                Buscar proveedor
+            </label>
+
+            <input
+                type="search"
+                id="supplierSearch"
+                placeholder="Buscar por nombre, RNC o contacto"
+            >
+
+        </div>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Proveedor</th>
+                        <th>RNC</th>
+                        <th>Contacto</th>
+                        <th>Teléfono</th>
+                        <th>Correo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="suppliersTableBody">
+
+                    <tr>
+                        <td colspan="7">
+                            Cargando proveedores...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+            
             <!-- =========================
                  REPORTES
             ========================== -->
