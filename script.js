@@ -470,6 +470,224 @@ async function cargarMovimientos() {
    PROVEEDORES
 ========================================================= */
 
+let suppliersList = [];
+
+
+async function cargarProveedores() {
+
+    const tabla =
+        document.getElementById(
+            "suppliersTableBody"
+        );
+
+    try {
+
+        const respuesta =
+            await fetch(
+                "/api/suppliers"
+            );
+
+        if (!respuesta.ok) {
+            throw new Error(
+                "No se pudieron cargar los proveedores."
+            );
+        }
+
+
+        suppliersList =
+            await respuesta.json();
+
+
+        renderizarProveedores(
+            suppliersList
+        );
+
+    } catch (error) {
+
+        tabla.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    ${escapeHtml(error.message)}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+
+function renderizarProveedores(
+    proveedores
+) {
+
+    const tabla =
+        document.getElementById(
+            "suppliersTableBody"
+        );
+
+
+    if (
+        !proveedores ||
+        proveedores.length === 0
+    ) {
+
+        tabla.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    No hay proveedores registrados.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    tabla.innerHTML =
+        proveedores
+            .map(
+                proveedor => `
+
+                    <tr>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.nombre || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.rnc || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.contacto || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.telefono || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.correo || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                proveedor.estado || "—"
+                            )}
+                        </td>
+
+                        <td>
+
+                            <button
+                                type="button"
+                                class="secondary-button supplier-edit"
+                                data-id="${proveedor.id}"
+                            >
+                                Editar
+                            </button>
+
+                            <button
+                                type="button"
+                                class="secondary-button supplier-toggle"
+                                data-id="${proveedor.id}"
+                            >
+                                ${
+                                    proveedor.estado ===
+                                    "Activo"
+                                        ? "Desactivar"
+                                        : "Activar"
+                                }
+                            </button>
+
+                            <button
+                                type="button"
+                                class="secondary-button supplier-delete"
+                                data-id="${proveedor.id}"
+                            >
+                                Eliminar
+                            </button>
+
+                        </td>
+
+                    </tr>
+                `
+            )
+            .join("");
+}
+
+document
+    .getElementById(
+        "supplierSearch"
+    )
+    .addEventListener(
+        "input",
+        event => {
+
+            const termino =
+                event.target.value
+                    .trim()
+                    .toLowerCase();
+
+
+            if (!termino) {
+
+                renderizarProveedores(
+                    suppliersList
+                );
+
+                return;
+            }
+
+
+            const filtrados =
+                suppliersList.filter(
+                    proveedor => {
+
+                        const texto = [
+                            proveedor.nombre,
+                            proveedor.rnc,
+                            proveedor.contacto,
+                            proveedor.telefono,
+                            proveedor.correo
+                        ]
+                            .filter(Boolean)
+                            .join(" ")
+                            .toLowerCase();
+
+
+                        return texto.includes(
+                            termino
+                        );
+                    }
+                );
+
+
+            renderizarProveedores(
+                filtrados
+            );
+        }
+    );
+
+
+document
+    .getElementById(
+        "btnNuevoProveedor"
+    )
+    .addEventListener(
+        "click",
+        abrirModalProveedor
+    );
+
+
 const supplierModal =
     document.getElementById("supplierModal");
 
@@ -4558,6 +4776,8 @@ document
 
 async function iniciarAplicacion() {
 
+  await cargarProveedores();
+    
   await Promise.all([
     cargarProductos(),
     cargarMovimientos(),
